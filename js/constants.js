@@ -12,13 +12,13 @@ TangledTower.GROUND_Y = 224;        // Top of ground tiles (visual)
 TangledTower.GROUND_SURFACE = 220;  // Where hero stands
 TangledTower.SPAWN_X = 520;         // Objects spawn off right edge
 
-// AI sprite sizes (used for scaling 1024x1024 PNGs down to game size)
-TangledTower.HERO_SCALE = 0.04;     // ~41px tall in game
-TangledTower.ENEMY_SCALE = 0.05;    // ~51px tall
-TangledTower.BOSS_SCALE = 0.09;     // ~92px tall
-TangledTower.TOWER_SCALE = 0.18;    // ~184px tall
-TangledTower.POWERUP_SCALE = 0.03;  // ~31px
-TangledTower.VINE_SCALE = 0.06;     // ~60px tall
+// AI sprite sizes (sprites pre-scaled to ~target height, these fine-tune display)
+TangledTower.HERO_SCALE = 0.32;     // ~41px tall in game
+TangledTower.ENEMY_SCALE = 0.32;    // ~51px tall
+TangledTower.BOSS_SCALE = 0.31;     // ~92px tall
+TangledTower.TOWER_SCALE = 0.31;    // ~184px tall
+TangledTower.POWERUP_SCALE = 0.31;  // ~31px
+TangledTower.VINE_SCALE = 0.30;     // ~60px tall
 
 // Lives
 TangledTower.STARTING_LIVES = 5;

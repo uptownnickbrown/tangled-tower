@@ -46,7 +46,7 @@ TangledTower.BossScene = new Phaser.Class({
     // Hero
     var heroKey = this.textures.exists('hero_run1') ? 'hero_run1' :
                   (this.textures.exists('hero_run') ? 'hero_run' : 'hero');
-    var heroScale = TangledTower.HERO_SCALE || 0.04;
+    var heroScale = TangledTower.HERO_SCALE || 0.32;
     this.hero = this.physics.add.sprite(TangledTower.HERO_X, TangledTower.GROUND_Y - 20, heroKey);
     this.hero.setScale(heroScale);
     this.hero.body.setGravityY(TangledTower.GRAVITY);
@@ -67,7 +67,7 @@ TangledTower.BossScene = new Phaser.Class({
     var bossKey = this.textures.exists(aiKey) ? aiKey :
                   (this.textures.exists(bossData.spriteKey) ? bossData.spriteKey : null);
     var isAIBoss = bossKey && bossKey.indexOf('_') !== -1;
-    var bossScale = isAIBoss ? (TangledTower.BOSS_SCALE || 0.09) : 1.5;
+    var bossScale = isAIBoss ? (TangledTower.BOSS_SCALE || 0.31) : 1.5;
     var bossX = w - 80;
     var bossY = TangledTower.GROUND_Y - 20;
     if (bossData.type === 'giant_bat' || bossData.type === 'dragon') {

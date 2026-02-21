@@ -27,7 +27,7 @@ TangledTower.UIScene = new Phaser.Class({
       if (heartKey) {
         var heartTex = this.textures.get('heart');
         var isAIHeart = heartTex.source[0].width > 32;
-        var heartScale = isAIHeart ? 0.016 : 1.2;
+        var heartScale = isAIHeart ? 0.33 : 1.2;
         heart = this.add.sprite(12 + i * 13, 12, 'heart').setScale(heartScale);
       } else {
         heart = this.add.circle(12 + i * 13, 12, 5, 0xFF3344);

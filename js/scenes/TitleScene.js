@@ -29,7 +29,7 @@ TangledTower.TitleScene = new Phaser.Class({
 
     // Tower on right side
     if (this.textures.exists('tower')) {
-      var towerScale = TangledTower.TOWER_SCALE || 0.18;
+      var towerScale = TangledTower.TOWER_SCALE || 0.31;
       this.add.sprite(w - 60, h - 40, 'tower').setOrigin(0.5, 1).setScale(towerScale);
     }
 
@@ -41,7 +41,7 @@ TangledTower.TitleScene = new Phaser.Class({
     var heroKey = this.textures.exists('hero_run1') ? 'hero_run1' :
                   (this.textures.exists('hero_run') ? 'hero_run' : 'hero');
     if (this.textures.exists(heroKey)) {
-      var heroScale = (TangledTower.HERO_SCALE || 0.04) * 1.5;
+      var heroScale = (TangledTower.HERO_SCALE || 0.32) * 1.5;
       var hero = this.add.sprite(100, h - 50, heroKey);
       hero.setScale(heroScale);
       hero.play('hero-run');

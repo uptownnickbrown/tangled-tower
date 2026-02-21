@@ -75,7 +75,7 @@ TangledTower.CutsceneScene = new Phaser.Class({
 
     // Tower in center
     if (this.textures.exists('tower')) {
-      var towerScale = TangledTower.TOWER_SCALE || 0.18;
+      var towerScale = TangledTower.TOWER_SCALE || 0.31;
       this.add.sprite(w / 2, h - 28, 'tower').setOrigin(0.5, 1).setScale(towerScale);
     } else {
       // Fallback simple tower
@@ -136,7 +136,7 @@ TangledTower.CutsceneScene = new Phaser.Class({
     var heroKey = this.textures.exists('hero_run1') ? 'hero_run1' :
                   (this.textures.exists('hero_run') ? 'hero_run' : 'hero');
     if (this.textures.exists(heroKey)) {
-      var heroScale = (TangledTower.HERO_SCALE || 0.04) * 1.5;
+      var heroScale = (TangledTower.HERO_SCALE || 0.32) * 1.5;
       var hero = this.add.sprite(60, h - 42, heroKey);
       hero.setScale(heroScale);
       hero.play('hero-run');

@@ -332,9 +332,9 @@ TangledTower.GameScene = new Phaser.Class({
     if (types.length === 0) return;
 
     var type = Phaser.Utils.Array.GetRandom(types);
-    var scales = { bg_tree: 0.04, bg_bush: 0.02, bg_rock: 0.015 };
+    var scales = { bg_tree: 0.32, bg_bush: 0.31, bg_rock: 0.31 };
     var depthMult = Phaser.Math.FloatBetween(0.7, 1.3);
-    var scale = (scales[type] || 0.03) * Phaser.Math.FloatBetween(0.8, 1.2) * depthMult;
+    var scale = (scales[type] || 0.31) * Phaser.Math.FloatBetween(0.8, 1.2) * depthMult;
 
     var item = this.add.sprite(x, groundY, type).setOrigin(0.5, 1).setScale(scale);
     item.setDepth(type === 'bg_tree' ? 1 : 2);
@@ -350,7 +350,7 @@ TangledTower.GameScene = new Phaser.Class({
     if (!this.textures.exists(key)) return;
 
     var y = Phaser.Math.Between(40, TangledTower.GROUND_Y - 40);
-    var scale = isNight ? 0.01 : 0.012;
+    var scale = isNight ? 0.31 : 0.30;
     var creature = this.add.sprite(x, y, key).setScale(scale).setDepth(3);
 
     // Gentle floating motion
@@ -427,7 +427,7 @@ TangledTower.GameScene = new Phaser.Class({
   _createHero: function() {
     var heroKey = this.textures.exists('hero_run1') ? 'hero_run1' :
                   (this.textures.exists('hero_run') ? 'hero_run' : 'hero');
-    var scale = TangledTower.HERO_SCALE || 0.04;
+    var scale = TangledTower.HERO_SCALE || 0.32;
     this.hero = this.physics.add.sprite(TangledTower.HERO_X, TangledTower.GROUND_Y - 20, heroKey);
     this.hero.setScale(scale);
     this.hero.body.setGravityY(TangledTower.GRAVITY);
@@ -520,7 +520,7 @@ TangledTower.GameScene = new Phaser.Class({
       coin.setActive(true).setVisible(true);
       coin.body.enable = true;
       if (isAI) {
-        var coinScale = 0.02;
+        var coinScale = 0.31;
         coin.setScale(coinScale);
         var coinSize = coin.displayWidth * 0.7;
         coin.body.setSize(coinSize / coinScale, coinSize / coinScale);
@@ -553,7 +553,7 @@ TangledTower.GameScene = new Phaser.Class({
     var vineKey = this.textures.exists('vine') ? 'vine' : null;
     var groundY = TangledTower.GROUND_Y;
     var isAI = this.textures.exists('vine') && !this.textures.get('vine').source[0].isRenderTexture;
-    var scale = TangledTower.VINE_SCALE || 0.04;
+    var scale = TangledTower.VINE_SCALE || 0.30;
     var heights = [16, 24, 32];
     var h = heights[size] || 16;
 
@@ -581,7 +581,7 @@ TangledTower.GameScene = new Phaser.Class({
 
   _spawnGoblin: function(x) {
     var gobKey = this.textures.exists('goblin') ? 'goblin' : null;
-    var scale = TangledTower.ENEMY_SCALE || 0.035;
+    var scale = TangledTower.ENEMY_SCALE || 0.32;
     var isAI = gobKey && !this.textures.get('goblin').source[0].isRenderTexture;
     var goblin = this.goblins.get(x, TangledTower.GROUND_Y - 6, gobKey, isAI ? undefined : 0);
     if (goblin) {
@@ -607,7 +607,7 @@ TangledTower.GameScene = new Phaser.Class({
 
   _spawnBat: function(x) {
     var batKey = this.textures.exists('bat') ? 'bat' : null;
-    var scale = TangledTower.ENEMY_SCALE || 0.035;
+    var scale = TangledTower.ENEMY_SCALE || 0.32;
     var isAI = batKey && !this.textures.get('bat').source[0].isRenderTexture;
     // Bats fly at a height that requires crouching (head height)
     var y = TangledTower.GROUND_Y - 24;
@@ -654,7 +654,7 @@ TangledTower.GameScene = new Phaser.Class({
     } else if (this.textures.exists(procKeys[type])) {
       spriteKey = procKeys[type];
     }
-    var scale = TangledTower.POWERUP_SCALE || 0.02;
+    var scale = TangledTower.POWERUP_SCALE || 0.31;
     var pu = this.powerups.get(x, y, spriteKey, isAI ? undefined : 0);
     if (pu) {
       pu.setActive(true).setVisible(true);
@@ -1030,14 +1030,9 @@ TangledTower.GameScene = new Phaser.Class({
 
   // Callbacks for InputManager
   onCrouchStart: function() {
-    // Visual feedback: shift hero down, dust puff, tint
     if (this.hero) {
-      this.tweens.add({
-        targets: this.hero,
-        y: this.hero.y + 5,
-        duration: 100,
-        ease: 'Quad.easeOut'
-      });
+      var scale = this.hero.scaleX || TangledTower.HERO_SCALE;
+      this.hero.setScale(scale, scale * 0.7);  // squish to 70% height
       this.hero.setTint(0xDDDDCC);
       this._spawnParticles(this.hero.x - 6, TangledTower.GROUND_Y, 0xBBAA88, 3);
       this._spawnParticles(this.hero.x + 6, TangledTower.GROUND_Y, 0xBBAA88, 3);
@@ -1045,8 +1040,9 @@ TangledTower.GameScene = new Phaser.Class({
   },
 
   onCrouchEnd: function() {
-    // Clear tint, upward dust burst for launch
     if (this.hero) {
+      var scale = this.hero.scaleX || TangledTower.HERO_SCALE;
+      this.hero.setScale(scale);  // restore uniform scale
       this.hero.clearTint();
       this._spawnParticles(this.hero.x - 5, TangledTower.GROUND_Y, 0xDDCC99, 4);
       this._spawnParticles(this.hero.x + 5, TangledTower.GROUND_Y, 0xDDCC99, 4);
