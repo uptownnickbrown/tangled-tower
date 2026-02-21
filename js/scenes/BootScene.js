@@ -24,7 +24,7 @@ TangledTower.BootScene = new Phaser.Class({
 
     // Load AI-generated sprites
     var sprites = [
-      'hero_run', 'hero_run1', 'hero_run2', 'hero_run3',
+      'hero_run', 'hero_run1', 'hero_run2',
       'hero_jump', 'hero_crouch', 'hero_hurt',
       'tower', 'goblin', 'bat', 'vine',
       'boss_troll', 'boss_vine', 'boss_bat', 'boss_knight', 'boss_dragon',
@@ -53,14 +53,12 @@ TangledTower.BootScene = new Phaser.Class({
   },
 
   _createAnimations: function() {
-    // Hero run cycle - 3 AI-generated frames for smooth animation
+    // Hero run cycle - 2-frame classic NES style (stride vs legs-together)
     var runFrames = [];
     if (this.textures.exists('hero_run1')) {
       runFrames = [
         { key: 'hero_run1' },
-        { key: 'hero_run2' },
-        { key: 'hero_run3' },
-        { key: 'hero_run2' }  // bounce back for smoother loop
+        { key: 'hero_run2' }
       ];
     } else {
       runFrames = [{ key: 'hero_run' }];
