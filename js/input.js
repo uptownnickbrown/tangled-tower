@@ -17,8 +17,8 @@ TangledTower.InputManager = {
   _pendingJump: false,     // For input buffering
   _pendingJumpTime: 0,
   _groundPressQueued: false, // Intent window: press on ground awaiting disambiguation
-  COYOTE_TIME: 80,         // ms — can still jump briefly after leaving ground
-  JUMP_BUFFER: 100,        // ms — press remembered just before landing
+  COYOTE_TIME: 120,        // ms — can still jump briefly after leaving ground
+  JUMP_BUFFER: 200,        // ms — press remembered just before landing
   TAP_INTENT_WINDOW: 50,   // ms — wait this long to disambiguate tap vs hold (3 frames)
 
   setup: function(scene) {
@@ -189,7 +189,7 @@ TangledTower.InputManager = {
         // Shorter hitbox (scaled for AI sprites)
         var crouchScale = hero.scaleX || 1;
         var crouchW = hero.displayWidth * 0.6;
-        var crouchH = hero.displayHeight * 0.45;
+        var crouchH = hero.displayHeight * 0.35;
         hero.body.setSize(crouchW / crouchScale, crouchH / crouchScale);
         hero.body.setOffset(
           (hero.width - crouchW / crouchScale) / 2,

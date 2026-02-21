@@ -42,9 +42,11 @@ TangledTower.LEVELS = [
     boss: {
       type: 'troll',
       name: 'Giant Troll',
-      duration: 20,
-      attacks: ['ground_pound', 'rock_throw'],
-      attackInterval: 2.8,
+      hp: 8,
+      phases: [
+        { hpThreshold: 1.0, attackInterval: 2.5, attacks: ['ground_pound', 'rock_throw'] },
+        { hpThreshold: 0.5, attackInterval: 2.0, attacks: ['ground_pound', 'rock_throw', 'charge'] }
+      ],
       spriteKey: 'boss-troll'
     },
 
@@ -89,9 +91,11 @@ TangledTower.LEVELS = [
     boss: {
       type: 'vine_monster',
       name: 'Vine Monster',
-      duration: 22,
-      attacks: ['vine_whip', 'thorn_rain'],
-      attackInterval: 2.5,
+      hp: 10,
+      phases: [
+        { hpThreshold: 1.0, attackInterval: 2.5, attacks: ['vine_whip', 'thorn_rain'] },
+        { hpThreshold: 0.5, attackInterval: 1.8, attacks: ['vine_whip', 'thorn_rain', 'bat_swarm'] }
+      ],
       spriteKey: 'boss-vine'
     },
 
@@ -138,9 +142,12 @@ TangledTower.LEVELS = [
     boss: {
       type: 'giant_bat',
       name: 'Giant Bat',
-      duration: 25,
-      attacks: ['swoop', 'sonic_screech', 'bat_swarm'],
-      attackInterval: 2.2,
+      hp: 10,
+      phases: [
+        { hpThreshold: 1.0, attackInterval: 2.2, attacks: ['swoop', 'sonic_screech'] },
+        { hpThreshold: 0.6, attackInterval: 1.8, attacks: ['swoop', 'sonic_screech', 'bat_swarm'] },
+        { hpThreshold: 0.3, attackInterval: 1.5, attacks: ['swoop', 'sonic_screech', 'bat_swarm', 'dive_bomb'] }
+      ],
       spriteKey: 'boss-bat'
     },
 
@@ -187,9 +194,12 @@ TangledTower.LEVELS = [
     boss: {
       type: 'dark_knight',
       name: 'Dark Knight',
-      duration: 27,
-      attacks: ['sword_slash', 'charge', 'dark_bolt'],
-      attackInterval: 2.0,
+      hp: 12,
+      phases: [
+        { hpThreshold: 1.0, attackInterval: 2.2, attacks: ['sword_slash', 'dark_bolt'] },
+        { hpThreshold: 0.6, attackInterval: 1.8, attacks: ['sword_slash', 'dark_bolt', 'charge'] },
+        { hpThreshold: 0.3, attackInterval: 1.4, attacks: ['sword_slash', 'dark_bolt', 'charge', 'bat_swarm'] }
+      ],
       spriteKey: 'boss-knight'
     },
 
@@ -237,9 +247,12 @@ TangledTower.LEVELS = [
     boss: {
       type: 'dragon',
       name: 'Dragon',
-      duration: 30,
-      attacks: ['fireball', 'fire_breath', 'tail_sweep', 'dive_bomb'],
-      attackInterval: 1.8,
+      hp: 14,
+      phases: [
+        { hpThreshold: 1.0, attackInterval: 2.0, attacks: ['fireball', 'tail_sweep'] },
+        { hpThreshold: 0.6, attackInterval: 1.6, attacks: ['fireball', 'tail_sweep', 'fire_breath'] },
+        { hpThreshold: 0.3, attackInterval: 1.2, attacks: ['fireball', 'tail_sweep', 'fire_breath', 'dive_bomb', 'bat_swarm'] }
+      ],
       spriteKey: 'boss-dragon'
     },
 

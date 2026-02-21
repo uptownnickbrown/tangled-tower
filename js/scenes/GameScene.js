@@ -32,6 +32,7 @@ TangledTower.GameScene = new Phaser.Class({
     this.levelComplete = false;
     this.lastSpawnDistance = {};
     this.eventsFired = {};
+    this.totalCoins = 0;
 
     // Camera
     this.cameras.main.setBackgroundColor(levelData.skyColor);
@@ -111,6 +112,12 @@ TangledTower.GameScene = new Phaser.Class({
 
   update: function(time, delta) {
     if (this.gameOver || this.levelComplete) return;
+
+    // Safety: prevent hero from falling through ground
+    if (this.hero && this.hero.y > TangledTower.GROUND_Y + 30) {
+      this.hero.y = TangledTower.GROUND_Y - 10;
+      this.hero.body.velocity.y = 0;
+    }
 
     var dt = delta / 1000;
 
@@ -522,7 +529,7 @@ TangledTower.GameScene = new Phaser.Class({
       if (isAI) {
         var coinScale = 0.31;
         coin.setScale(coinScale);
-        var coinSize = coin.displayWidth * 0.7;
+        var coinSize = coin.displayWidth * 1.2;
         coin.body.setSize(coinSize / coinScale, coinSize / coinScale);
         coin.body.setOffset(
           (coin.width - coinSize / coinScale) / 2,
@@ -560,10 +567,11 @@ TangledTower.GameScene = new Phaser.Class({
     var vine = this.vines.get(x, groundY - h / 2, vineKey, isAI ? undefined : Math.min(size, 2));
     if (vine) {
       vine.setActive(true).setVisible(true);
+      vine.setDepth(5);
       vine.body.enable = true;
       if (isAI) {
         // Scale AI vine differently per size
-        var sizeScales = [scale * 0.6, scale * 0.8, scale];
+        var sizeScales = [scale * 0.8, scale, scale * 1.2];
         vine.setScale(sizeScales[size] || scale);
         var vineW = vine.displayWidth * 0.4;
         var vineH = vine.displayHeight * 0.85;
@@ -764,11 +772,11 @@ TangledTower.GameScene = new Phaser.Class({
     if (this.isInvincible || this.gameOver) return;
 
     if (this.hasSword) {
-      // Sword absorbs hit
+      // Sword absorbs hit + brief invincibility
       this.hasSword = false;
+      this.isInvincible = true;
       if (this.swordOrbit) this.swordOrbit.setVisible(false);
       TangledTower.AudioGen.playSword();
-      // "BLOCKED!" popup + silver particles + flash
       var swordPopup = this.add.bitmapText(this.hero.x, this.hero.y - 20, 'pixel-font', 'BLOCKED!', 8)
         .setOrigin(0.5).setDepth(20).setTint(0xCCCCDD);
       this.tweens.add({
@@ -780,15 +788,27 @@ TangledTower.GameScene = new Phaser.Class({
       });
       this._spawnParticles(this.hero.x, this.hero.y, 0xCCCCDD, 6);
       this.cameras.main.flash(100, 200, 200, 220, true);
+      var self = this;
+      this.tweens.add({
+        targets: this.hero,
+        alpha: { from: 0.5, to: 1 },
+        duration: 100,
+        repeat: 4,
+        yoyo: true,
+        onComplete: function() {
+          self.isInvincible = false;
+          self.hero.alpha = 1;
+        }
+      });
       return;
     }
 
     if (this.hasShield) {
-      // Shield absorbs hit
+      // Shield absorbs hit + brief invincibility
       this.hasShield = false;
+      this.isInvincible = true;
       this.shieldBubble.setVisible(false);
       TangledTower.AudioGen.playHit();
-      // "SHIELD!" popup + cyan particles + flash
       var shieldPopup = this.add.bitmapText(this.hero.x, this.hero.y - 20, 'pixel-font', 'SHIELD!', 8)
         .setOrigin(0.5).setDepth(20).setTint(0x44DDFF);
       this.tweens.add({
@@ -800,6 +820,18 @@ TangledTower.GameScene = new Phaser.Class({
       });
       this._spawnParticles(this.hero.x, this.hero.y, 0x44DDFF, 6);
       this.cameras.main.flash(100, 68, 221, 255, true);
+      var self = this;
+      this.tweens.add({
+        targets: this.hero,
+        alpha: { from: 0.5, to: 1 },
+        duration: 100,
+        repeat: 4,
+        yoyo: true,
+        onComplete: function() {
+          self.isInvincible = false;
+          self.hero.alpha = 1;
+        }
+      });
       return;
     }
 
@@ -852,6 +884,7 @@ TangledTower.GameScene = new Phaser.Class({
     coin.setActive(false).setVisible(false);
     coin.body.enable = false;
     this.score += 10;
+    this.totalCoins++;
     TangledTower.AudioGen.playCoin();
 
     // Particle burst
@@ -867,6 +900,24 @@ TangledTower.GameScene = new Phaser.Class({
       duration: 600,
       onComplete: function() { popup.destroy(); }
     });
+
+    // Every 100 coins, award a heart
+    if (this.totalCoins % 100 === 0 && this.health < TangledTower.STARTING_LIVES) {
+      this.health++;
+      this.events.emit('updateHUD', { health: this.health, score: this.totalScore + this.score, level: this.levelData.id });
+      TangledTower.AudioGen.playPowerUp();
+      this._spawnParticles(this.hero.x, this.hero.y - 10, 0xFF3344, 8);
+      var heartPopup = this.add.bitmapText(this.hero.x, this.hero.y - 20, 'pixel-font', '+1 HEART', 8)
+        .setOrigin(0.5).setDepth(20).setTint(0xFF3344);
+      var self = this;
+      this.tweens.add({
+        targets: heartPopup,
+        y: this.hero.y - 50,
+        alpha: 0,
+        duration: 1000,
+        onComplete: function() { heartPopup.destroy(); }
+      });
+    }
   },
 
   _collectPowerup: function(hero, pu) {

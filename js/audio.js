@@ -176,6 +176,22 @@ TangledTower.AudioGen = {
     this._playTone('square', 660, 880, 0.15, 0.2);
   },
 
+  playBossHurt: function() {
+    if (!this.ctx) return;
+    // Short descending pain tone
+    this._playTone('triangle', 300, 150, 0.15, 0.3);
+    this._playNoise(0.08, 0.15, 2000);
+  },
+
+  playDodgeSuccess: function() {
+    if (!this.ctx) return;
+    // Quick ascending ding
+    var now = this.ctx.currentTime;
+    this._playToneAt('square', 500, 0.08, 0.25, now);
+    this._playToneAt('square', 700, 0.08, 0.25, now + 0.06);
+    this._playToneAt('square', 900, 0.1, 0.25, now + 0.12);
+  },
+
   playBossDefeat: function() {
     if (!this.ctx) return;
     var now = this.ctx.currentTime;
