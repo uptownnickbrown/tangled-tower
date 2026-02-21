@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Generate 3-frame hero run cycle with visual coherence.
-Each frame shows the same knight at a different point in the stride.
+Generate 3-frame hero run cycle as a SINGLE SPRITE SHEET for visual consistency.
+All 3 poses are generated in one image, then split into individual frames.
+This ensures the knight's colors, proportions, and style remain identical across frames.
 """
 import os
 import sys
@@ -56,96 +57,149 @@ def remove_background(img, tolerance=90):
     return img_rgba, removed
 
 
-def generate_and_save(prompt, name, chroma="green"):
-    bg_suffix = {
-        "green": (
-            "Solid bright green chroma key background (#00FF00). "
-            "IMPORTANT: Do not use any bright green or lime colors anywhere in the sprite itself."
-        ),
-        "magenta": (
-            "Solid bright magenta chroma key background (#FF00FF). "
-            "IMPORTANT: Do not use any pink, magenta, or purple colors anywhere in the sprite itself."
-        ),
-    }
+def center_crop_frame(img, target_w, target_h):
+    """Crop a frame to center on its non-transparent content, padded to target size."""
+    # Find bounding box of non-transparent pixels
+    bbox = img.getbbox()
+    if not bbox:
+        return img.resize((target_w, target_h))
 
-    full_prompt = prompt + " " + bg_suffix[chroma]
-    print(f"\n  Generating: {name} ({chroma} chroma)...")
+    # Crop to content
+    content = img.crop(bbox)
+    cw, ch = content.size
 
-    try:
-        response = client.models.generate_images(
-            model="imagen-4.0-generate-001",
-            prompt=full_prompt,
-            config=types.GenerateImagesConfig(number_of_images=1),
-        )
+    # Scale to fit target while maintaining aspect ratio
+    scale = min(target_w / cw, target_h / ch) * 0.85  # 85% fill
+    new_w = int(cw * scale)
+    new_h = int(ch * scale)
+    content = content.resize((new_w, new_h), Image.NEAREST)
 
-        if not response.generated_images:
-            print(f"  ERROR: No images generated for {name}")
-            return False
-
-        img_data = response.generated_images[0].image.image_bytes
-        img = Image.open(io.BytesIO(img_data))
-
-        raw_path = output_dir / f"{name}_raw.png"
-        img.save(str(raw_path))
-
-        keyed_img, removed = remove_background(img)
-        keyed_path = output_dir / f"{name}.png"
-        keyed_img.save(str(keyed_path))
-
-        print(f"  Saved: {name}.png ({img.size[0]}x{img.size[1]}, {removed} bg pixels removed)")
-        return True
-
-    except Exception as e:
-        print(f"  ERROR generating {name}: {e}")
-        return False
+    # Center on target canvas
+    result = Image.new("RGBA", (target_w, target_h), (0, 0, 0, 0))
+    paste_x = (target_w - new_w) // 2
+    paste_y = target_h - new_h  # Align to bottom (feet on ground)
+    result.paste(content, (paste_x, paste_y))
+    return result
 
 
-# Shared character description for consistency
-char_desc = (
-    "A side-view pixel art sprite of a small chibi knight character for a 2D platformer game. "
-    "16-bit retro game style, clean pixel edges, black outline. "
-    "The knight has: gray metal helmet with visor slit showing determined eyes, "
+print("=" * 60)
+print("HERO RUN CYCLE - Sprite Sheet Approach")
+print("=" * 60)
+
+# Generate a sprite sheet with all 3 frames in one image for consistency
+prompt = (
+    "A pixel art sprite sheet showing exactly 3 running animation frames of the SAME small chibi knight character, "
+    "arranged horizontally in a single row, evenly spaced. "
+    "16-bit retro game style, clean pixel edges, black outline around the character. "
+    "\n\n"
+    "The knight has: a gray metal helmet with a T-shaped visor slit showing determined eyes, "
     "bright blue armor with silver trim on the chest and shoulders, "
-    "a flowing red cape billowing behind him in the wind, "
-    "brown leather boots with silver buckles, and a small silver sword at his hip. "
-    "Facing right. The character has consistent proportions: large head, small body, "
-    "stubby limbs in chibi style. "
-    "Single character only, no text, no labels, no ground, no shadow."
+    "a flowing red cape billowing behind him, "
+    "brown leather boots with silver buckles, and a small silver sword sheathed at his hip. "
+    "Facing right. Large head, small body, stubby limbs in chibi/cute style. "
+    "\n\n"
+    "Frame 1 (left): Right foot forward touching ground, left foot behind, arms swinging opposite to legs. "
+    "Frame 2 (center): Both feet close together mid-stride, body at highest point, slightly upright. "
+    "Frame 3 (right): Left foot forward touching ground, right foot behind, mirror of frame 1. "
+    "\n\n"
+    "All 3 frames must show the EXACT SAME character with identical colors, helmet, armor, cape, and sword. "
+    "Only the leg and arm positions change between frames. "
+    "Each frame occupies roughly 1/3 of the image width. "
+    "No text, no labels, no ground line, no numbers. "
+    "Solid bright magenta chroma key background (#FF00FF). "
+    "IMPORTANT: Do not use any pink, magenta, or purple colors anywhere in the sprites themselves."
 )
 
-print("=" * 60)
-print("HERO RUN CYCLE - 3 Frames")
-print("=" * 60)
+print("\n  Generating sprite sheet with 3 run cycle frames...")
+try:
+    response = client.models.generate_images(
+        model="imagen-4.0-generate-001",
+        prompt=prompt,
+        config=types.GenerateImagesConfig(number_of_images=1),
+    )
 
-# Frame 1: Right foot forward, left foot back (contact pose)
-generate_and_save(
-    char_desc +
-    " Running pose frame 1 of 3: RIGHT leg extended forward with foot about to touch ground, "
-    "LEFT leg extended behind. Arms in opposite position - left arm forward, right arm back. "
-    "Cape is lifted and flowing straight back horizontally in the wind. "
-    "Body leaning slightly forward with momentum.",
-    "hero_run1", chroma="green"
-)
+    if not response.generated_images:
+        print("  ERROR: No images generated")
+        sys.exit(1)
 
-# Frame 2: Both feet close together, passing position
-generate_and_save(
-    char_desc +
-    " Running pose frame 2 of 3: Both legs close together passing each other mid-stride. "
-    "Body is at its highest point, slightly more upright. "
-    "Arms close to the body. "
-    "Cape is flowing behind and slightly upward, catching the air.",
-    "hero_run2", chroma="green"
-)
+    img_data = response.generated_images[0].image.image_bytes
+    sheet = Image.open(io.BytesIO(img_data))
 
-# Frame 3: Left foot forward, right foot back (opposite contact)
-generate_and_save(
-    char_desc +
-    " Running pose frame 3 of 3: LEFT leg extended forward with foot about to touch ground, "
-    "RIGHT leg extended behind. Arms in opposite position - right arm forward, left arm back. "
-    "Cape is lifted and flowing straight back horizontally in the wind. "
-    "Body leaning slightly forward with momentum.",
-    "hero_run3", chroma="green"
-)
+    # Save raw sprite sheet
+    raw_path = output_dir / "hero_run_sheet_raw.png"
+    sheet.save(str(raw_path))
+    print(f"  Raw sprite sheet saved: {sheet.size[0]}x{sheet.size[1]}")
+
+    # Remove background from full sheet
+    keyed_sheet, removed = remove_background(sheet)
+    sheet_path = output_dir / "hero_run_sheet.png"
+    keyed_sheet.save(str(sheet_path))
+    print(f"  Background removed: {removed} pixels")
+
+    # Split into 3 equal frames
+    w, h = keyed_sheet.size
+    frame_w = w // 3
+
+    frame_names = ["hero_run1", "hero_run2", "hero_run3"]
+    for i, name in enumerate(frame_names):
+        left = i * frame_w
+        right = left + frame_w
+        frame = keyed_sheet.crop((left, 0, right, h))
+
+        # Center-crop each frame to consistent size, feet aligned
+        frame = center_crop_frame(frame, frame_w, h)
+
+        frame_path = output_dir / f"{name}.png"
+        frame.save(str(frame_path))
+        print(f"  Saved: {name}.png ({frame_w}x{h})")
+
+    print("\n  SUCCESS: 3 run cycle frames extracted from sprite sheet")
+
+except Exception as e:
+    print(f"  ERROR: {e}")
+    print("\n  Falling back to individual frame generation...")
+
+    # Fallback: generate each frame individually with very detailed shared description
+    char_desc = (
+        "A side-view pixel art sprite of a small chibi knight character for a 2D platformer game. "
+        "16-bit retro game style, clean pixel edges, black outline. "
+        "The knight has: a gray metal helmet with a T-shaped visor slit, "
+        "bright blue armor with silver trim, a flowing red cape behind him, "
+        "brown leather boots with silver buckles, a small silver sword at his hip. "
+        "Facing right. Large head, small body, stubby limbs. "
+        "Single character only, no text, no labels, no ground, no shadow. "
+        "Solid bright magenta chroma key background (#FF00FF). "
+        "IMPORTANT: Do not use any pink, magenta, or purple in the sprite."
+    )
+
+    poses = [
+        (" Running pose: Right leg forward, left leg back, left arm forward, right arm back. "
+         "Cape flowing straight back. Body leaning forward.", "hero_run1"),
+        (" Running pose: Both legs together mid-stride, body upright at highest point. "
+         "Arms close to body. Cape floating slightly up.", "hero_run2"),
+        (" Running pose: Left leg forward, right leg back, right arm forward, left arm back. "
+         "Cape flowing straight back. Body leaning forward.", "hero_run3"),
+    ]
+
+    for pose_desc, name in poses:
+        full_prompt = char_desc + pose_desc
+        print(f"\n  Generating: {name}...")
+        try:
+            resp = client.models.generate_images(
+                model="imagen-4.0-generate-001",
+                prompt=full_prompt,
+                config=types.GenerateImagesConfig(number_of_images=1),
+            )
+            if not resp.generated_images:
+                print(f"  ERROR: No image for {name}")
+                continue
+            img = Image.open(io.BytesIO(resp.generated_images[0].image.image_bytes))
+            img.save(str(output_dir / f"{name}_raw.png"))
+            keyed, rem = remove_background(img)
+            keyed.save(str(output_dir / f"{name}.png"))
+            print(f"  Saved: {name}.png ({rem} bg pixels removed)")
+        except Exception as ex:
+            print(f"  ERROR generating {name}: {ex}")
 
 print("\n" + "=" * 60)
 print("RUN CYCLE GENERATION COMPLETE")

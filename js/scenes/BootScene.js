@@ -68,7 +68,7 @@ TangledTower.BootScene = new Phaser.Class({
     this.anims.create({
       key: 'hero-run',
       frames: runFrames,
-      frameRate: 8,
+      frameRate: 4,
       repeat: -1
     });
 
