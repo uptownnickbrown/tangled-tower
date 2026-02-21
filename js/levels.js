@@ -9,9 +9,9 @@ TangledTower.LEVELS = [
     subtitle: 'The Journey Begins',
     skyColor: 0x88CCFF,
     groundTint: 0xFFFFFF,
-    scrollSpeed: 80,
-    maxScrollSpeed: 100,
-    levelLength: 5000,
+    scrollSpeed: 85,
+    maxScrollSpeed: 110,
+    levelLength: 4000,
     musicIndex: 0,
 
     bgTints: {
@@ -21,11 +21,15 @@ TangledTower.LEVELS = [
     },
 
     spawns: [
-      { type: 'coin',       freq: 180, startAfter: 100 },
-      { type: 'coin_arc',   freq: 700, startAfter: 300 },
-      { type: 'vine_small', freq: 500, startAfter: 400 },
-      { type: 'goblin',     freq: 900, startAfter: 1200 },
-      { type: 'shield',     freq: 3500, startAfter: 800 },
+      { type: 'coin',        freq: 160, startAfter: 80 },
+      { type: 'coin_arc',    freq: 550, startAfter: 250 },
+      { type: 'vine_small',  freq: 350, startAfter: 300 },
+      { type: 'vine_medium', freq: 600, startAfter: 1200 },
+      { type: 'goblin',      freq: 550, startAfter: 600 },
+      { type: 'bat',         freq: 900, startAfter: 1800 },
+      { type: 'shield',      freq: 3000, startAfter: 700 },
+      { type: 'boots',       freq: 4000, startAfter: 1500 },
+      { type: 'sword',       freq: 4500, startAfter: 2500 },
     ],
 
     // Tutorial hints at specific distances

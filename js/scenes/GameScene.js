@@ -139,6 +139,32 @@ TangledTower.GameScene = new Phaser.Class({
     // Check level events
     this._checkEvents();
 
+    // Landing dust detection
+    var onGround = this.hero.body.blocked.down;
+    if (onGround && !this._wasOnGround) {
+      // Just landed — dust puff
+      this._spawnParticles(this.hero.x - 4, TangledTower.GROUND_Y, 0xBBAA88, 3);
+      this._spawnParticles(this.hero.x + 4, TangledTower.GROUND_Y, 0xBBAA88, 3);
+    }
+    this._wasOnGround = onGround;
+
+    // Running dust (periodic small puffs)
+    if (onGround && !TangledTower.InputManager.isCrouching) {
+      this._runDustTimer = (this._runDustTimer || 0) + dt;
+      if (this._runDustTimer > 0.25) {
+        this._runDustTimer = 0;
+        var dustP = this.add.circle(this.hero.x - 8, TangledTower.GROUND_Y - 1, 1.5, 0xBBAA88, 0.6);
+        this.tweens.add({
+          targets: dustP,
+          x: dustP.x - 12,
+          alpha: 0,
+          scale: 0,
+          duration: 350,
+          onComplete: function() { dustP.destroy(); }
+        });
+      }
+    }
+
     // Input update
     TangledTower.InputManager.update(this);
 
@@ -559,6 +585,25 @@ TangledTower.GameScene = new Phaser.Class({
       hero.body.velocity.y = -200; // Bounce
       this.score += 100;
       TangledTower.AudioGen.playEnemyDefeat();
+
+      // Stomp particles
+      this._spawnParticles(enemy.x, enemy.y, 0xFFDD00, 4);
+
+      // Floating "+100" text
+      var stompPopup = this.add.bitmapText(enemy.x, enemy.y, 'pixel-font-gold', '+100', 8)
+        .setOrigin(0.5).setDepth(20);
+      this.tweens.add({
+        targets: stompPopup,
+        y: enemy.y - 30,
+        alpha: 0,
+        duration: 700,
+        onComplete: function() { stompPopup.destroy(); }
+      });
+
+      // Brief slow-motion for impact
+      this.time.timeScale = 0.3;
+      var self2 = this;
+      this.time.delayedCall(80, function() { self2.time.timeScale = 1; });
     } else {
       this._takeDamage();
     }
@@ -630,8 +675,19 @@ TangledTower.GameScene = new Phaser.Class({
     this.score += 10;
     TangledTower.AudioGen.playCoin();
 
-    // Small visual pop
-    this._spawnParticles(coin.x, coin.y, 0xFFDD00, 3);
+    // Particle burst
+    this._spawnParticles(coin.x, coin.y, 0xFFDD00, 5);
+
+    // Floating "+10" text
+    var popup = this.add.bitmapText(coin.x, coin.y, 'pixel-font-gold', '+10', 8)
+      .setOrigin(0.5).setDepth(20);
+    this.tweens.add({
+      targets: popup,
+      y: coin.y - 25,
+      alpha: 0,
+      duration: 600,
+      onComplete: function() { popup.destroy(); }
+    });
   },
 
   _collectPowerup: function(hero, pu) {
@@ -642,7 +698,19 @@ TangledTower.GameScene = new Phaser.Class({
     this.tweens.killTweensOf(pu);
 
     TangledTower.AudioGen.playPowerUp();
-    this._spawnParticles(pu.x, pu.y, 0x44DDFF, 5);
+    this._spawnParticles(pu.x, pu.y, 0x44DDFF, 8);
+
+    // Powerup name popup
+    var names = { shield: 'SHIELD!', boots: 'SPEED!', sword: 'SWORD!' };
+    var popup = this.add.bitmapText(pu.x, pu.y, 'pixel-font', names[type] || '', 8)
+      .setOrigin(0.5).setDepth(20).setTint(0x44DDFF);
+    this.tweens.add({
+      targets: popup,
+      y: pu.y - 25,
+      alpha: 0,
+      duration: 800,
+      onComplete: function() { popup.destroy(); }
+    });
 
     switch (type) {
       case 'shield':
