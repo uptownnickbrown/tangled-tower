@@ -2,3 +2,6 @@
 node_modules/
 .DS_Store
 scripts/.venv/
+.claude/
+assets/sprites/*_raw.png
+assets/sprites/*_sheet_raw.png
