@@ -6,6 +6,8 @@ TangledTower.SpriteGen = {
 
   // Helper: create a canvas texture and get its context
   _makeCanvas: function(scene, key, w, h) {
+    // Skip if an AI sprite with this key was already loaded in preload
+    if (scene.textures.exists(key)) return null;
     var tex = scene.textures.createCanvas(key, w, h);
     var ctx = tex.getContext();
     ctx.imageSmoothingEnabled = false;
@@ -86,6 +88,7 @@ TangledTower.SpriteGen = {
   _createHero: function(scene) {
     var fw = 16, fh = 16, frames = 7;
     var c = this._makeCanvas(scene, 'hero', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -248,6 +251,7 @@ TangledTower.SpriteGen = {
   _createGoblin: function(scene) {
     var fw = 12, fh = 12, frames = 4;
     var c = this._makeCanvas(scene, 'goblin', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -330,6 +334,7 @@ TangledTower.SpriteGen = {
   _createBat: function(scene) {
     var fw = 16, fh = 10, frames = 4;
     var c = this._makeCanvas(scene, 'bat', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -403,6 +408,7 @@ TangledTower.SpriteGen = {
   _createVine: function(scene) {
     var fw = 8, fh = 16, frames = 3;
     var c = this._makeCanvas(scene, 'vine', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -480,6 +486,7 @@ TangledTower.SpriteGen = {
   _createCoin: function(scene) {
     var fw = 8, fh = 8, frames = 4;
     var c = this._makeCanvas(scene, 'coin', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -545,6 +552,7 @@ TangledTower.SpriteGen = {
   _createShieldPowerup: function(scene) {
     var fw = 10, fh = 10, frames = 2;
     var c = this._makeCanvas(scene, 'shield-powerup', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -590,6 +598,7 @@ TangledTower.SpriteGen = {
   _createSpeedBoots: function(scene) {
     var fw = 10, fh = 10;
     var c = this._makeCanvas(scene, 'speed-boots', fw, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -620,6 +629,7 @@ TangledTower.SpriteGen = {
   _createSwordPowerup: function(scene) {
     var fw = 10, fh = 12, frames = 2;
     var c = this._makeCanvas(scene, 'sword-powerup', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -668,6 +678,7 @@ TangledTower.SpriteGen = {
   // =========================================
   _createHeart: function(scene) {
     var c = this._makeCanvas(scene, 'heart', 8, 8);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -869,6 +880,7 @@ TangledTower.SpriteGen = {
   _createBossTroll: function(scene) {
     var fw = 32, fh = 32, frames = 3;
     var c = this._makeCanvas(scene, 'boss-troll', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -915,6 +927,7 @@ TangledTower.SpriteGen = {
   _createBossVine: function(scene) {
     var fw = 28, fh = 32, frames = 3;
     var c = this._makeCanvas(scene, 'boss-vine', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -961,6 +974,7 @@ TangledTower.SpriteGen = {
   _createBossBat: function(scene) {
     var fw = 32, fh = 24, frames = 3;
     var c = this._makeCanvas(scene, 'boss-bat', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -1011,6 +1025,7 @@ TangledTower.SpriteGen = {
   _createBossKnight: function(scene) {
     var fw = 24, fh = 28, frames = 3;
     var c = this._makeCanvas(scene, 'boss-knight', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -1067,6 +1082,7 @@ TangledTower.SpriteGen = {
   _createBossDragon: function(scene) {
     var fw = 40, fh = 32, frames = 3;
     var c = this._makeCanvas(scene, 'boss-dragon', fw * frames, fh);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 
@@ -1141,6 +1157,7 @@ TangledTower.SpriteGen = {
   _createTower: function(scene) {
     var w = 48, h = 80;
     var c = this._makeCanvas(scene, 'tower', w, h);
+    if (!c) return;
     var ctx = c.ctx;
     var P = TangledTower.PALETTE;
 

@@ -44,26 +44,42 @@ TangledTower.BossScene = new Phaser.Class({
     this.groundBody.setDisplaySize(w, 32).setVisible(false).refreshBody();
 
     // Hero
-    var heroKey = this.textures.exists('hero') ? 'hero' : null;
-    this.hero = this.physics.add.sprite(TangledTower.HERO_X, TangledTower.GROUND_Y - 16, heroKey, 0);
+    var heroKey = this.textures.exists('hero_run') ? 'hero_run' : 'hero';
+    var heroScale = TangledTower.HERO_SCALE || 0.04;
+    this.hero = this.physics.add.sprite(TangledTower.HERO_X, TangledTower.GROUND_Y - 20, heroKey);
+    this.hero.setScale(heroScale);
     this.hero.body.setGravityY(TangledTower.GRAVITY);
-    this.hero.body.setSize(12, 16);
-    this.hero.body.setOffset(2, 0);
+    var heroW = this.hero.displayWidth * 0.5;
+    var heroH = this.hero.displayHeight * 0.85;
+    this.hero.body.setSize(heroW / heroScale, heroH / heroScale);
+    this.hero.body.setOffset(
+      (this.hero.width - heroW / heroScale) / 2,
+      this.hero.height - heroH / heroScale
+    );
     this.hero.setDepth(10);
-    if (heroKey) this.hero.play('hero-run');
+    this.hero.play('hero-run');
 
     this.physics.add.collider(this.hero, this.groundBody);
 
-    // Boss sprite
-    var bossKey = this.textures.exists(bossData.spriteKey) ? bossData.spriteKey : null;
+    // Boss sprite — prefer AI sprites (boss_troll) over procedural (boss-troll)
+    var aiKey = bossData.spriteKey.replace('-', '_');
+    var bossKey = this.textures.exists(aiKey) ? aiKey :
+                  (this.textures.exists(bossData.spriteKey) ? bossData.spriteKey : null);
+    var isAIBoss = bossKey && bossKey.indexOf('_') !== -1;
+    var bossScale = isAIBoss ? (TangledTower.BOSS_SCALE || 0.09) : 1.5;
     var bossX = w - 80;
     var bossY = TangledTower.GROUND_Y - 20;
     if (bossData.type === 'giant_bat' || bossData.type === 'dragon') {
       bossY = TangledTower.GROUND_Y - 50;
     }
 
-    this.boss = this.add.sprite(bossX, bossY, bossKey, 0);
-    this.boss.setScale(1.5);
+    this.boss = this.add.sprite(bossX, bossY, bossKey, isAIBoss ? undefined : 0);
+    this.boss.setScale(bossScale);
+    if (isAIBoss) {
+      // Position boss so it stands on the ground
+      this.boss.setOrigin(0.5, 1);
+      this.boss.y = TangledTower.GROUND_Y;
+    }
     this.bossBaseX = bossX;
     this.bossBaseY = bossY;
 
@@ -98,7 +114,8 @@ TangledTower.BossScene = new Phaser.Class({
 
     // Boss body overlap (for swoops/charges)
     this.bossHitbox = this.physics.add.sprite(bossX, bossY, null).setVisible(false);
-    this.bossHitbox.body.setSize(30, 30);
+    var bossHitSize = isAIBoss ? this.boss.displayWidth * 0.6 : 30;
+    this.bossHitbox.body.setSize(bossHitSize, bossHitSize);
     this.bossHitbox.body.allowGravity = false;
     this.bossHitbox.body.enable = false;
     this.physics.add.overlap(this.hero, this.bossHitbox, this._hitBossBody, null, this);
@@ -514,11 +531,12 @@ TangledTower.BossScene = new Phaser.Class({
 
     // Boss defeat animation
     var self = this;
+    var currentScale = this.boss.scaleX;
     this.tweens.add({
       targets: this.boss,
       alpha: { from: 1, to: 0 },
-      scaleX: { from: 1.5, to: 2 },
-      scaleY: { from: 1.5, to: 0.1 },
+      scaleX: { from: currentScale, to: currentScale * 1.3 },
+      scaleY: { from: currentScale, to: currentScale * 0.1 },
       duration: 1000,
       ease: 'Quad.easeIn'
     });

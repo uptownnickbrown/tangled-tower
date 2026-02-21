@@ -250,16 +250,22 @@ TangledTower.GameScene = new Phaser.Class({
   // --- Hero ---
 
   _createHero: function() {
-    var heroKey = this.textures.exists('hero') ? 'hero' : null;
-    this.hero = this.physics.add.sprite(TangledTower.HERO_X, TangledTower.GROUND_Y - 16, heroKey, 0);
+    var heroKey = this.textures.exists('hero_run') ? 'hero_run' : 'hero';
+    var scale = TangledTower.HERO_SCALE || 0.04;
+    this.hero = this.physics.add.sprite(TangledTower.HERO_X, TangledTower.GROUND_Y - 20, heroKey);
+    this.hero.setScale(scale);
     this.hero.body.setGravityY(TangledTower.GRAVITY);
-    this.hero.body.setSize(12, 16);
-    this.hero.body.setOffset(2, 0);
+    // Hitbox sized for the scaled sprite
+    var heroW = this.hero.displayWidth * 0.5;
+    var heroH = this.hero.displayHeight * 0.85;
+    this.hero.body.setSize(heroW / scale, heroH / scale);
+    this.hero.body.setOffset(
+      (this.hero.width - heroW / scale) / 2,
+      this.hero.height - heroH / scale
+    );
     this.hero.setDepth(10);
 
-    if (heroKey) {
-      this.hero.play('hero-run');
-    }
+    this.hero.play('hero-run');
   },
 
   // --- Spawning ---
@@ -330,13 +336,26 @@ TangledTower.GameScene = new Phaser.Class({
   },
 
   _spawnCoin: function(x, y) {
-    var coinKey = this.textures.exists('coin') ? 'coin' : null;
-    var coin = this.coins.get(x, y, coinKey, 0);
+    var hasProcCoin = this.textures.exists('coin-proc');
+    var coinKey = hasProcCoin ? 'coin-proc' : 'coin';
+    var isAI = !hasProcCoin && this.textures.exists('coin');
+    var coin = this.coins.get(x, y, coinKey, isAI ? undefined : 0);
     if (coin) {
       coin.setActive(true).setVisible(true);
       coin.body.enable = true;
-      coin.body.setSize(8, 8);
-      if (coinKey) coin.play('coin-spin');
+      if (isAI) {
+        var coinScale = 0.015;
+        coin.setScale(coinScale);
+        var coinSize = coin.displayWidth * 0.7;
+        coin.body.setSize(coinSize / coinScale, coinSize / coinScale);
+        coin.body.setOffset(
+          (coin.width - coinSize / coinScale) / 2,
+          (coin.height - coinSize / coinScale) / 2
+        );
+      } else {
+        coin.body.setSize(10, 10);
+      }
+      try { coin.play('coin-spin'); } catch (e) {}
     }
   },
 
@@ -357,60 +376,127 @@ TangledTower.GameScene = new Phaser.Class({
   _spawnVine: function(x, size) {
     var vineKey = this.textures.exists('vine') ? 'vine' : null;
     var groundY = TangledTower.GROUND_Y;
+    var isAI = this.textures.exists('vine') && !this.textures.get('vine').source[0].isRenderTexture;
+    var scale = TangledTower.VINE_SCALE || 0.04;
     var heights = [16, 24, 32];
     var h = heights[size] || 16;
 
-    var vine = this.vines.get(x, groundY - h / 2, vineKey, Math.min(size, 2));
+    var vine = this.vines.get(x, groundY - h / 2, vineKey, isAI ? undefined : Math.min(size, 2));
     if (vine) {
       vine.setActive(true).setVisible(true);
       vine.body.enable = true;
-      vine.body.setSize(6, h);
+      if (isAI) {
+        // Scale AI vine differently per size
+        var sizeScales = [scale * 0.6, scale * 0.8, scale];
+        vine.setScale(sizeScales[size] || scale);
+        var vineW = vine.displayWidth * 0.4;
+        var vineH = vine.displayHeight * 0.85;
+        vine.body.setSize(vineW / vine.scaleX, vineH / vine.scaleY);
+        vine.body.setOffset(
+          (vine.width - vineW / vine.scaleX) / 2,
+          vine.height - vineH / vine.scaleY
+        );
+        vine.y = groundY - vine.displayHeight / 2;
+      } else {
+        vine.body.setSize(6, h);
+      }
     }
   },
 
   _spawnGoblin: function(x) {
     var gobKey = this.textures.exists('goblin') ? 'goblin' : null;
-    var goblin = this.goblins.get(x, TangledTower.GROUND_Y - 6, gobKey, 0);
+    var scale = TangledTower.ENEMY_SCALE || 0.035;
+    var isAI = gobKey && !this.textures.get('goblin').source[0].isRenderTexture;
+    var goblin = this.goblins.get(x, TangledTower.GROUND_Y - 6, gobKey, isAI ? undefined : 0);
     if (goblin) {
       goblin.setActive(true).setVisible(true);
       goblin.body.enable = true;
-      goblin.body.setSize(10, 12);
       goblin._alive = true;
+      if (isAI) {
+        goblin.setScale(scale);
+        var gobW = goblin.displayWidth * 0.5;
+        var gobH = goblin.displayHeight * 0.85;
+        goblin.body.setSize(gobW / scale, gobH / scale);
+        goblin.body.setOffset(
+          (goblin.width - gobW / scale) / 2,
+          goblin.height - gobH / scale
+        );
+        goblin.y = TangledTower.GROUND_Y - goblin.displayHeight / 2;
+      } else {
+        goblin.body.setSize(10, 12);
+      }
       if (gobKey) goblin.play('goblin-walk');
     }
   },
 
   _spawnBat: function(x) {
     var batKey = this.textures.exists('bat') ? 'bat' : null;
+    var scale = TangledTower.ENEMY_SCALE || 0.035;
+    var isAI = batKey && !this.textures.get('bat').source[0].isRenderTexture;
     // Bats fly at a height that requires crouching (head height)
     var y = TangledTower.GROUND_Y - 24;
-    var bat = this.bats.get(x, y, batKey, 0);
+    var bat = this.bats.get(x, y, batKey, isAI ? undefined : 0);
     if (bat) {
       bat.setActive(true).setVisible(true);
       bat.body.enable = true;
-      bat.body.setSize(14, 8);
       bat._baseY = y;
       bat._floatTime = 0;
       bat._alive = true;
+      if (isAI) {
+        bat.setScale(scale);
+        var batW = bat.displayWidth * 0.6;
+        var batH = bat.displayHeight * 0.5;
+        bat.body.setSize(batW / scale, batH / scale);
+        bat.body.setOffset(
+          (bat.width - batW / scale) / 2,
+          (bat.height - batH / scale) / 2
+        );
+      } else {
+        bat.body.setSize(14, 8);
+      }
       if (batKey) bat.play('bat-fly');
     }
   },
 
   _spawnPowerup: function(x, y, type) {
-    var keys = {
+    // Check for AI sprites first, fall back to procedural
+    var aiKeys = {
+      shield: 'powerup_shield',
+      boots: 'powerup_boots',
+      sword: 'powerup_sword'
+    };
+    var procKeys = {
       shield: 'shield-powerup',
       boots: 'speed-boots',
       sword: 'sword-powerup'
     };
-    var spriteKey = this.textures.exists(keys[type]) ? keys[type] : null;
-    var pu = this.powerups.get(x, y, spriteKey, 0);
+    var spriteKey = null;
+    var isAI = false;
+    if (this.textures.exists(aiKeys[type])) {
+      spriteKey = aiKeys[type];
+      isAI = true;
+    } else if (this.textures.exists(procKeys[type])) {
+      spriteKey = procKeys[type];
+    }
+    var scale = TangledTower.POWERUP_SCALE || 0.02;
+    var pu = this.powerups.get(x, y, spriteKey, isAI ? undefined : 0);
     if (pu) {
       pu.setActive(true).setVisible(true);
       pu.body.enable = true;
-      pu.body.setSize(10, 10);
       pu._puType = type;
-      if (type === 'shield' && spriteKey) pu.play('shield-glow');
-      if (type === 'sword' && spriteKey) pu.play('sword-shine');
+      if (isAI) {
+        pu.setScale(scale);
+        var puSize = pu.displayWidth * 0.7;
+        pu.body.setSize(puSize / scale, puSize / scale);
+        pu.body.setOffset(
+          (pu.width - puSize / scale) / 2,
+          (pu.height - puSize / scale) / 2
+        );
+      } else {
+        pu.body.setSize(10, 10);
+        if (type === 'shield' && spriteKey) pu.play('shield-glow');
+        if (type === 'sword' && spriteKey) pu.play('sword-shine');
+      }
 
       // Float animation
       this.tweens.add({
@@ -431,7 +517,7 @@ TangledTower.GameScene = new Phaser.Class({
     group.getChildren().forEach(function(obj) {
       if (obj.active) {
         obj.x -= px;
-        if (obj.x < -30) {
+        if (obj.x < -60) {
           obj.setActive(false).setVisible(false);
           obj.body.enable = false;
         }
@@ -457,15 +543,16 @@ TangledTower.GameScene = new Phaser.Class({
         try { enemy.play('goblin-die'); } catch (e) {}
       }
       enemy.body.enable = false;
+      var enemyBaseScale = enemy.scaleY;
       this.tweens.add({
         targets: enemy,
         alpha: 0,
-        scaleY: 0.2,
+        scaleY: enemyBaseScale * 0.15,
         duration: 200,
         onComplete: function() {
           enemy.setActive(false).setVisible(false);
           enemy.alpha = 1;
-          enemy.scaleY = 1;
+          enemy.scaleY = enemyBaseScale;
         }
       });
       hero.body.velocity.y = -200; // Bounce

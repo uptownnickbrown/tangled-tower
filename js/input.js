@@ -68,9 +68,15 @@ TangledTower.InputManager = {
       // Release crouch -> charged jump
       this.isCrouching = false;
 
-      // Restore full hitbox
-      hero.body.setSize(12, 16);
-      hero.body.setOffset(2, 0);
+      // Restore full hitbox (scaled for AI sprites)
+      var scale = hero.scaleX || 1;
+      var heroW = hero.displayWidth * 0.5;
+      var heroH = hero.displayHeight * 0.85;
+      hero.body.setSize(heroW / scale, heroH / scale);
+      hero.body.setOffset(
+        (hero.width - heroW / scale) / 2,
+        hero.height - heroH / scale
+      );
 
       if (onGround) {
         var chargeRatio = Math.min((holdDuration - TangledTower.CROUCH_THRESHOLD) / 800, 1);
@@ -120,9 +126,15 @@ TangledTower.InputManager = {
       if (holdTime >= TangledTower.CROUCH_THRESHOLD) {
         this.isCrouching = true;
         hero.play('hero-crouch', true);
-        // Shorter hitbox
-        hero.body.setSize(14, 10);
-        hero.body.setOffset(1, 6);
+        // Shorter hitbox (scaled for AI sprites)
+        var crouchScale = hero.scaleX || 1;
+        var crouchW = hero.displayWidth * 0.6;
+        var crouchH = hero.displayHeight * 0.45;
+        hero.body.setSize(crouchW / crouchScale, crouchH / crouchScale);
+        hero.body.setOffset(
+          (hero.width - crouchW / crouchScale) / 2,
+          hero.height - crouchH / crouchScale
+        );
         if (TangledTower.AudioGen) TangledTower.AudioGen.playCrouch();
         if (scene.onCrouchStart) scene.onCrouchStart();
       }

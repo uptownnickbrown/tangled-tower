@@ -1,5 +1,5 @@
 // Tangled Tower - Boot Scene
-// Generates all textures and animations, then transitions to title
+// Loads AI sprites, generates procedural textures, creates animations
 var TangledTower = TangledTower || {};
 
 TangledTower.BootScene = new Phaser.Class({
@@ -9,168 +9,166 @@ TangledTower.BootScene = new Phaser.Class({
     Phaser.Scene.call(this, { key: 'BootScene' });
   },
 
-  create: function() {
+  preload: function() {
     var w = TangledTower.GAME_WIDTH;
     var h = TangledTower.GAME_HEIGHT;
 
-    // Show loading text
+    // Loading screen
     this.cameras.main.setBackgroundColor(0x000000);
     var loadText = this.add.text(w / 2, h / 2 - 20, 'TANGLED TOWER', {
-      fontFamily: 'monospace',
-      fontSize: '16px',
-      color: '#FFD700'
+      fontFamily: 'monospace', fontSize: '16px', color: '#FFD700'
     }).setOrigin(0.5);
-
     var subText = this.add.text(w / 2, h / 2 + 10, 'Loading...', {
-      fontFamily: 'monospace',
-      fontSize: '8px',
-      color: '#FFFFFF'
+      fontFamily: 'monospace', fontSize: '8px', color: '#FFFFFF'
     }).setOrigin(0.5);
 
-    // Generate all sprites and animations
-    var self = this;
-    this.time.delayedCall(100, function() {
-      TangledTower.SpriteGen.createAllTextures(self);
-      self._createAnimations();
-      self.scene.start('TitleScene');
-    });
+    // Load AI-generated sprites
+    var sprites = [
+      'hero_run', 'hero_jump', 'hero_crouch', 'hero_hurt',
+      'tower', 'goblin', 'bat', 'vine',
+      'boss_troll', 'boss_vine', 'boss_bat', 'boss_knight', 'boss_dragon',
+      'powerup_shield', 'powerup_boots', 'powerup_sword',
+      'coin', 'heart'
+    ];
+
+    for (var i = 0; i < sprites.length; i++) {
+      this.load.image(sprites[i], 'assets/sprites/' + sprites[i] + '.png');
+    }
+  },
+
+  create: function() {
+    // Generate procedural textures (ground, backgrounds, small items)
+    TangledTower.SpriteGen.createAllTextures(this);
+
+    // Create animations
+    this._createAnimations();
+
+    // Start game
+    this.scene.start('TitleScene');
   },
 
   _createAnimations: function() {
-    // Hero animations
+    // Hero animations - each pose is a separate AI-generated image
+    // For "run" we use a single image (no multi-frame cycle from AI)
+    // The run animation will just be the single run image
     this.anims.create({
       key: 'hero-run',
-      frames: [
-        { key: 'hero', frame: 0 },
-        { key: 'hero', frame: 1 },
-        { key: 'hero', frame: 2 },
-        { key: 'hero', frame: 3 }
-      ],
-      frameRate: 10,
+      frames: [{ key: 'hero_run' }],
+      frameRate: 1,
       repeat: -1
     });
 
     this.anims.create({
       key: 'hero-jump',
-      frames: [{ key: 'hero', frame: 4 }],
+      frames: [{ key: 'hero_jump' }],
       frameRate: 1
     });
 
     this.anims.create({
       key: 'hero-crouch',
-      frames: [{ key: 'hero', frame: 5 }],
+      frames: [{ key: 'hero_crouch' }],
       frameRate: 1
     });
 
     this.anims.create({
       key: 'hero-hurt',
-      frames: [{ key: 'hero', frame: 6 }],
+      frames: [{ key: 'hero_hurt' }],
       frameRate: 1
     });
 
-    // Goblin animations
+    // Goblin - single image, no animation frames needed
     this.anims.create({
       key: 'goblin-walk',
-      frames: [
-        { key: 'goblin', frame: 0 },
-        { key: 'goblin', frame: 1 }
-      ],
-      frameRate: 6,
+      frames: [{ key: 'goblin' }],
+      frameRate: 1,
       repeat: -1
     });
 
     this.anims.create({
       key: 'goblin-die',
-      frames: [{ key: 'goblin', frame: 3 }],
+      frames: [{ key: 'goblin' }],
       frameRate: 1
     });
 
-    // Bat animations
+    // Bat
     this.anims.create({
       key: 'bat-fly',
-      frames: [
-        { key: 'bat', frame: 0 },
-        { key: 'bat', frame: 1 }
-      ],
-      frameRate: 8,
+      frames: [{ key: 'bat' }],
+      frameRate: 1,
       repeat: -1
     });
 
-    this.anims.create({
-      key: 'bat-swoop',
-      frames: [{ key: 'bat', frame: 2 }],
-      frameRate: 1
-    });
-
-    // Coin animation
+    // Coin - use procedural if exists, else AI image
+    var coinKey = this.textures.exists('coin-proc') ? 'coin-proc' : 'coin';
     this.anims.create({
       key: 'coin-spin',
-      frames: [
-        { key: 'coin', frame: 0 },
-        { key: 'coin', frame: 1 },
-        { key: 'coin', frame: 2 },
-        { key: 'coin', frame: 3 }
-      ],
+      frames: this.textures.exists('coin-proc')
+        ? [
+            { key: 'coin-proc', frame: 0 },
+            { key: 'coin-proc', frame: 1 },
+            { key: 'coin-proc', frame: 2 },
+            { key: 'coin-proc', frame: 3 }
+          ]
+        : [{ key: 'coin' }],
       frameRate: 8,
       repeat: -1
     });
 
     // Shield glow
+    var shieldKey = this.textures.exists('shield-powerup') ? 'shield-powerup' : 'powerup_shield';
     this.anims.create({
       key: 'shield-glow',
-      frames: [
-        { key: 'shield-powerup', frame: 0 },
-        { key: 'shield-powerup', frame: 1 }
-      ],
+      frames: this.textures.exists('shield-powerup')
+        ? [{ key: 'shield-powerup', frame: 0 }, { key: 'shield-powerup', frame: 1 }]
+        : [{ key: 'powerup_shield' }],
       frameRate: 4,
       repeat: -1
     });
 
     // Sword shine
+    var swordKey = this.textures.exists('sword-powerup') ? 'sword-powerup' : 'powerup_sword';
     this.anims.create({
       key: 'sword-shine',
-      frames: [
-        { key: 'sword-powerup', frame: 0 },
-        { key: 'sword-powerup', frame: 1 }
-      ],
+      frames: this.textures.exists('sword-powerup')
+        ? [{ key: 'sword-powerup', frame: 0 }, { key: 'sword-powerup', frame: 1 }]
+        : [{ key: 'powerup_sword' }],
       frameRate: 4,
       repeat: -1
     });
 
-    // Fireball
-    this.anims.create({
-      key: 'fireball-burn',
-      frames: [
-        { key: 'fireball', frame: 0 },
-        { key: 'fireball', frame: 1 }
-      ],
-      frameRate: 10,
-      repeat: -1
-    });
+    // Fireball (procedural only)
+    if (this.textures.exists('fireball')) {
+      this.anims.create({
+        key: 'fireball-burn',
+        frames: [
+          { key: 'fireball', frame: 0 },
+          { key: 'fireball', frame: 1 }
+        ],
+        frameRate: 10,
+        repeat: -1
+      });
+    }
 
-    // Boss animations
+    // Boss animations - AI sprites are single images
     var bosses = [
-      { key: 'boss-troll', prefix: 'troll' },
-      { key: 'boss-vine', prefix: 'vine' },
-      { key: 'boss-bat', prefix: 'bat-boss' },
-      { key: 'boss-knight', prefix: 'dknight' },
-      { key: 'boss-dragon', prefix: 'dragon' }
+      { key: 'boss_troll', prefix: 'troll' },
+      { key: 'boss_vine', prefix: 'vine' },
+      { key: 'boss_bat', prefix: 'bat-boss' },
+      { key: 'boss_knight', prefix: 'dknight' },
+      { key: 'boss_dragon', prefix: 'dragon' }
     ];
 
     for (var i = 0; i < bosses.length; i++) {
       var b = bosses[i];
       this.anims.create({
         key: b.prefix + '-idle',
-        frames: [
-          { key: b.key, frame: 0 },
-          { key: b.key, frame: 1 }
-        ],
-        frameRate: 3,
+        frames: [{ key: b.key }],
+        frameRate: 1,
         repeat: -1
       });
       this.anims.create({
         key: b.prefix + '-attack',
-        frames: [{ key: b.key, frame: 2 }],
+        frames: [{ key: b.key }],
         frameRate: 1
       });
     }

@@ -49,9 +49,11 @@ TangledTower.CutsceneScene = new Phaser.Class({
     }).setOrigin(0.5);
 
     // Hero walking across
-    if (this.textures.exists('hero')) {
-      var hero = this.add.sprite(60, h - 42, 'hero', 0);
-      hero.setScale(2);
+    var heroKey = this.textures.exists('hero_run') ? 'hero_run' : 'hero';
+    if (this.textures.exists(heroKey)) {
+      var heroScale = (TangledTower.HERO_SCALE || 0.04) * 1.5;
+      var hero = this.add.sprite(60, h - 42, heroKey);
+      hero.setScale(heroScale);
       hero.play('hero-run');
     }
 
