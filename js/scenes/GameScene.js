@@ -698,24 +698,24 @@ TangledTower.GameScene = new Phaser.Class({
 
   _showHint: function(text) {
     var w = TangledTower.GAME_WIDTH;
-    if (this.hintText) this.hintText.destroy();
-    this.hintText = this.add.text(w / 2, 80, text, {
-      fontFamily: 'monospace',
-      fontSize: '10px',
-      color: '#FFFFFF',
-      stroke: '#000000',
-      strokeThickness: 2,
-      fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(20);
+    if (this.hintText) {
+      if (this.hintText._shadow) this.hintText._shadow.destroy();
+      this.hintText.destroy();
+    }
+    this.hintText = TangledTower.bmpText(this, w / 2, 80, text, 16, 0xFFFFFF, 20);
 
+    var shadow = this.hintText._shadow;
     this.tweens.add({
-      targets: this.hintText,
+      targets: [this.hintText, shadow],
       alpha: 0,
-      y: 60,
+      y: '-=20',
       duration: 2500,
       delay: 1500,
       onComplete: function() {
-        if (this.hintText) this.hintText.destroy();
+        if (this.hintText) {
+          if (this.hintText._shadow) this.hintText._shadow.destroy();
+          this.hintText.destroy();
+        }
       }.bind(this)
     });
   },

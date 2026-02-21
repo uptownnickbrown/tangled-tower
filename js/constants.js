@@ -124,6 +124,23 @@ TangledTower.PALETTE = {
   TEXT_SHADOW:   0x222222
 };
 
+// Helper: create bitmap text with shadow
+TangledTower.bmpText = function(scene, x, y, text, size, tint, depth) {
+  size = size || 8;
+  depth = depth || 0;
+  text = ('' + text).toUpperCase();
+  // Shadow
+  var shadow = scene.add.bitmapText(x + 1, y + 1, 'pixel-font', text, size);
+  shadow.setTint(0x000000).setOrigin(0.5).setDepth(depth);
+  // Main text
+  var fontKey = (tint === 0xFFD700) ? 'pixel-font-gold' : 'pixel-font';
+  var main = scene.add.bitmapText(x, y, fontKey, text, size);
+  if (tint && tint !== 0xFFD700 && tint !== 0xFFFFFF) main.setTint(tint);
+  main.setOrigin(0.5).setDepth(depth);
+  main._shadow = shadow;
+  return main;
+};
+
 // Shorthand
 var P = TangledTower.PALETTE;
 var _ = null; // transparent pixel shorthand

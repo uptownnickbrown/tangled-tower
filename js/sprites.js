@@ -1338,5 +1338,120 @@ TangledTower.SpriteGen = {
 
     c.tex.refresh();
     this._addFrames(c.tex, fw, fh, frames);
+  },
+
+  // =========================================
+  // BITMAP PIXEL FONT - 5x7 glyphs
+  // =========================================
+  createBitmapFont: function(scene) {
+    var glyphW = 5, glyphH = 7;
+    var cellW = 6, cellH = 8; // 1px padding
+    var cols = 16;
+    var chars = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:!?+-\'",;=';
+    var rows = Math.ceil(chars.length / cols);
+    var canvasW = cols * cellW;
+    var canvasH = rows * cellH;
+
+    // Glyph data: each char is 7 rows, each row is 5-bit number (MSB=left)
+    var G = {
+      ' ': [0,0,0,0,0,0,0],
+      'A': [14,17,17,31,17,17,17],
+      'B': [30,17,17,30,17,17,30],
+      'C': [14,17,16,16,16,17,14],
+      'D': [28,18,17,17,17,18,28],
+      'E': [31,16,16,30,16,16,31],
+      'F': [31,16,16,30,16,16,16],
+      'G': [14,17,16,23,17,17,15],
+      'H': [17,17,17,31,17,17,17],
+      'I': [14,4,4,4,4,4,14],
+      'J': [7,2,2,2,2,18,12],
+      'K': [17,18,20,24,20,18,17],
+      'L': [16,16,16,16,16,16,31],
+      'M': [17,27,21,17,17,17,17],
+      'N': [17,25,21,19,17,17,17],
+      'O': [14,17,17,17,17,17,14],
+      'P': [30,17,17,30,16,16,16],
+      'Q': [14,17,17,17,21,18,13],
+      'R': [30,17,17,30,20,18,17],
+      'S': [15,16,16,14,1,1,30],
+      'T': [31,4,4,4,4,4,4],
+      'U': [17,17,17,17,17,17,14],
+      'V': [17,17,17,17,17,10,4],
+      'W': [17,17,17,21,21,21,10],
+      'X': [17,17,10,4,10,17,17],
+      'Y': [17,17,10,4,4,4,4],
+      'Z': [31,1,2,4,8,16,31],
+      '0': [14,17,19,21,25,17,14],
+      '1': [4,12,4,4,4,4,14],
+      '2': [14,17,1,2,4,8,31],
+      '3': [31,2,4,2,1,17,14],
+      '4': [2,6,10,18,31,2,2],
+      '5': [31,16,30,1,1,17,14],
+      '6': [6,8,16,30,17,17,14],
+      '7': [31,1,2,4,8,8,8],
+      '8': [14,17,17,14,17,17,14],
+      '9': [14,17,17,15,1,2,12],
+      '.': [0,0,0,0,0,0,4],
+      ':': [0,0,4,0,0,4,0],
+      '!': [4,4,4,4,4,0,4],
+      '?': [14,17,1,6,4,0,4],
+      '+': [0,4,4,31,4,4,0],
+      '-': [0,0,0,14,0,0,0],
+      '\'': [4,4,0,0,0,0,0],
+      '"': [10,10,0,0,0,0,0],
+      ',': [0,0,0,0,0,4,8],
+      ';': [0,0,4,0,0,4,8],
+      '=': [0,0,31,0,31,0,0]
+    };
+
+    // Two sizes: normal (white) and gold (for titles)
+    var fonts = [
+      { key: 'pixel-font', color: [255, 255, 255] },
+      { key: 'pixel-font-gold', color: [255, 215, 0] }
+    ];
+
+    for (var f = 0; f < fonts.length; f++) {
+      var fontDef = fonts[f];
+      var tex = scene.textures.createCanvas(fontDef.key, canvasW, canvasH);
+      var ctx = tex.getContext();
+      ctx.imageSmoothingEnabled = false;
+
+      var cr = fontDef.color[0], cg = fontDef.color[1], cb = fontDef.color[2];
+      ctx.fillStyle = 'rgb(' + cr + ',' + cg + ',' + cb + ')';
+
+      for (var i = 0; i < chars.length; i++) {
+        var ch = chars[i];
+        var glyph = G[ch];
+        if (!glyph) continue;
+        var col = i % cols;
+        var row = Math.floor(i / cols);
+        var ox = col * cellW;
+        var oy = row * cellH;
+
+        for (var gy = 0; gy < glyphH; gy++) {
+          var bits = glyph[gy];
+          for (var gx = 0; gx < glyphW; gx++) {
+            if (bits & (1 << (glyphW - 1 - gx))) {
+              ctx.fillRect(ox + gx, oy + gy, 1, 1);
+            }
+          }
+        }
+      }
+      tex.refresh();
+
+      // Register as RetroFont
+      var fontConfig = {
+        image: fontDef.key,
+        width: cellW,
+        height: cellH,
+        chars: chars,
+        charsPerRow: cols,
+        offset: { x: 0, y: 0 },
+        spacing: { x: 0, y: 0 }
+      };
+      scene.cache.bitmapFont.add(fontDef.key,
+        Phaser.GameObjects.RetroFont.Parse(scene, fontConfig)
+      );
+    }
   }
 };

@@ -31,22 +31,8 @@ TangledTower.CutsceneScene = new Phaser.Class({
     gfx.fillRect(0, h - 28, w, 28);
 
     // Level header
-    this.add.text(w / 2, 30, 'LEVEL ' + level.id, {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: '#FFD700',
-      stroke: '#000000',
-      strokeThickness: 2,
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
-
-    this.add.text(w / 2, 50, level.subtitle, {
-      fontFamily: 'monospace',
-      fontSize: '8px',
-      color: '#FFFFFF',
-      stroke: '#000000',
-      strokeThickness: 1
-    }).setOrigin(0.5);
+    TangledTower.bmpText(this, w / 2, 30, 'LEVEL ' + level.id, 16, 0xFFD700);
+    TangledTower.bmpText(this, w / 2, 52, level.subtitle.toUpperCase(), 8, 0xFFFFFF);
 
     // Hero walking across
     var heroKey = this.textures.exists('hero_run1') ? 'hero_run1' :
@@ -62,23 +48,14 @@ TangledTower.CutsceneScene = new Phaser.Class({
     this.textLines = level.cutscene || [];
     this.currentLine = 0;
     this.charIndex = 0;
-    this.textObj = this.add.text(w / 2, h / 2 + 10, '', {
-      fontFamily: 'monospace',
-      fontSize: '8px',
-      color: '#FFFFFF',
-      stroke: '#000000',
-      strokeThickness: 2,
-      wordWrap: { width: 400 },
-      align: 'center'
-    }).setOrigin(0.5);
 
-    this.skipText = this.add.text(w / 2, h - 45, 'TAP TO CONTINUE', {
-      fontFamily: 'monospace',
-      fontSize: '6px',
-      color: '#AAAAAA',
-      stroke: '#000000',
-      strokeThickness: 1
-    }).setOrigin(0.5).setAlpha(0);
+    // Use bitmap text for cutscene (manually typed)
+    this.textObj = this.add.bitmapText(w / 2, h / 2 + 10, 'pixel-font', '', 8).setOrigin(0.5);
+    this.textShadow = this.add.bitmapText(w / 2 + 1, h / 2 + 11, 'pixel-font', '', 8)
+      .setOrigin(0.5).setTint(0x000000).setDepth(-1);
+
+    this.skipObj = this.add.bitmapText(w / 2, h - 42, 'pixel-font', '', 8)
+      .setOrigin(0.5).setAlpha(0);
 
     // Start typewriter
     this._typeNextChar();
@@ -92,10 +69,10 @@ TangledTower.CutsceneScene = new Phaser.Class({
   _typeNextChar: function() {
     if (this.currentLine >= this.textLines.length) {
       // All lines shown
-      this.skipText.setText('TAP TO START LEVEL');
-      this.skipText.setAlpha(1);
+      this.skipObj.setText('TAP TO START LEVEL');
+      this.skipObj.setAlpha(1);
       this.tweens.add({
-        targets: this.skipText,
+        targets: this.skipObj,
         alpha: 0.3,
         duration: 500,
         yoyo: true,
@@ -107,7 +84,9 @@ TangledTower.CutsceneScene = new Phaser.Class({
 
     var line = this.textLines[this.currentLine];
     if (this.charIndex < line.length) {
-      this.textObj.setText(line.substring(0, this.charIndex + 1));
+      var displayText = line.substring(0, this.charIndex + 1).toUpperCase();
+      this.textObj.setText(displayText);
+      this.textShadow.setText(displayText);
       this.charIndex++;
       if (TangledTower.AudioGen && TangledTower.AudioGen.initialized && this.charIndex % 2 === 0) {
         TangledTower.AudioGen.playTyping();
@@ -115,8 +94,8 @@ TangledTower.CutsceneScene = new Phaser.Class({
       this.typeTimer = this.time.delayedCall(40, this._typeNextChar, [], this);
     } else {
       // Line complete - show skip hint
-      this.skipText.setText('TAP TO CONTINUE');
-      this.skipText.setAlpha(0.6);
+      this.skipObj.setText('TAP TO CONTINUE');
+      this.skipObj.setAlpha(0.6);
       this.lineComplete = true;
     }
   },
@@ -142,16 +121,17 @@ TangledTower.CutsceneScene = new Phaser.Class({
       this.lineComplete = false;
       this.currentLine++;
       this.charIndex = 0;
-      this.skipText.setAlpha(0);
+      this.skipObj.setAlpha(0);
       this._typeNextChar();
     } else {
       // Skip typewriter - show full line
       if (this.typeTimer) this.typeTimer.destroy();
-      var line = this.textLines[this.currentLine];
+      var line = this.textLines[this.currentLine].toUpperCase();
       this.textObj.setText(line);
+      this.textShadow.setText(line);
       this.charIndex = line.length;
-      this.skipText.setText('TAP TO CONTINUE');
-      this.skipText.setAlpha(0.6);
+      this.skipObj.setText('TAP TO CONTINUE');
+      this.skipObj.setAlpha(0.6);
       this.lineComplete = true;
     }
   }

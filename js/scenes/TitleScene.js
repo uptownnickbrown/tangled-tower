@@ -34,23 +34,8 @@ TangledTower.TitleScene = new Phaser.Class({
     }
 
     // Title text
-    this.add.text(w / 2, 40, 'TANGLED', {
-      fontFamily: 'monospace',
-      fontSize: '28px',
-      color: '#FFD700',
-      stroke: '#000000',
-      strokeThickness: 3,
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
-
-    this.add.text(w / 2, 72, 'TOWER', {
-      fontFamily: 'monospace',
-      fontSize: '28px',
-      color: '#FFD700',
-      stroke: '#000000',
-      strokeThickness: 3,
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
+    TangledTower.bmpText(this, w / 2, 40, 'TANGLED', 24, 0xFFD700);
+    TangledTower.bmpText(this, w / 2, 72, 'TOWER', 24, 0xFFD700);
 
     // Hero sprite running in place
     var heroKey = this.textures.exists('hero_run1') ? 'hero_run1' :
@@ -63,16 +48,10 @@ TangledTower.TitleScene = new Phaser.Class({
     }
 
     // Tap to start - blinking
-    var startText = this.add.text(w / 2, h - 70, 'TAP TO START', {
-      fontFamily: 'monospace',
-      fontSize: '10px',
-      color: '#FFFFFF',
-      stroke: '#000000',
-      strokeThickness: 2
-    }).setOrigin(0.5);
+    var startText = TangledTower.bmpText(this, w / 2, h - 70, 'TAP TO START', 16, 0xFFFFFF);
 
     this.tweens.add({
-      targets: startText,
+      targets: [startText, startText._shadow],
       alpha: 0.2,
       duration: 500,
       yoyo: true,
@@ -80,13 +59,7 @@ TangledTower.TitleScene = new Phaser.Class({
     });
 
     // Sound toggle hint
-    this.add.text(w - 10, 10, 'SOUND: ON', {
-      fontFamily: 'monospace',
-      fontSize: '6px',
-      color: '#FFFFFF',
-      stroke: '#000000',
-      strokeThickness: 1
-    }).setOrigin(1, 0);
+    TangledTower.bmpText(this, w - 50, 12, 'SOUND: ON', 8, 0xFFFFFF);
 
     // Wait for input
     var self = this;

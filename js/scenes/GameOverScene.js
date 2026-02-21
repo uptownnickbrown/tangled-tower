@@ -21,35 +21,16 @@ TangledTower.GameOverScene = new Phaser.Class({
     this.cameras.main.fadeIn(500);
 
     // Game Over text
-    this.add.text(w / 2, h / 3, 'GAME OVER', {
-      fontFamily: 'monospace',
-      fontSize: '24px',
-      color: '#FF3344',
-      stroke: '#000000',
-      strokeThickness: 3,
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
+    TangledTower.bmpText(this, w / 2, h / 3, 'GAME OVER', 24, 0xFF3344);
 
     // Score
-    this.add.text(w / 2, h / 2, 'SCORE: ' + this.finalScore, {
-      fontFamily: 'monospace',
-      fontSize: '10px',
-      color: '#FFFFFF',
-      stroke: '#000000',
-      strokeThickness: 2
-    }).setOrigin(0.5);
+    TangledTower.bmpText(this, w / 2, h / 2, 'SCORE: ' + this.finalScore, 16, 0xFFFFFF);
 
     // Retry text
-    var retryText = this.add.text(w / 2, h / 2 + 40, 'TAP TO TRY AGAIN', {
-      fontFamily: 'monospace',
-      fontSize: '8px',
-      color: '#FFFFFF',
-      stroke: '#000000',
-      strokeThickness: 1
-    }).setOrigin(0.5);
+    var retryText = TangledTower.bmpText(this, w / 2, h / 2 + 40, 'TAP TO TRY AGAIN', 8, 0xFFFFFF);
 
     this.tweens.add({
-      targets: retryText,
+      targets: [retryText, retryText._shadow],
       alpha: 0.3,
       duration: 500,
       yoyo: true,

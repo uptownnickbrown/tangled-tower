@@ -41,6 +41,9 @@ TangledTower.BootScene = new Phaser.Class({
     // Generate procedural textures (ground, backgrounds, small items)
     TangledTower.SpriteGen.createAllTextures(this);
 
+    // Create bitmap pixel font
+    TangledTower.SpriteGen.createBitmapFont(this);
+
     // Create animations
     this._createAnimations();
 

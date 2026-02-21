@@ -93,14 +93,7 @@ TangledTower.BossScene = new Phaser.Class({
     try { this.boss.play(this.bossAnimPrefix + '-idle'); } catch (e) {}
 
     // Boss name
-    this.add.text(w / 2, 15, bossData.name.toUpperCase(), {
-      fontFamily: 'monospace',
-      fontSize: '10px',
-      color: '#FF4444',
-      stroke: '#000000',
-      strokeThickness: 2,
-      fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(50);
+    TangledTower.bmpText(this, w / 2, 15, bossData.name, 8, 0xFF4444, 50);
 
     // Progress bar background
     var barX = w / 2 - 80;
@@ -272,28 +265,17 @@ TangledTower.BossScene = new Phaser.Class({
     var warnX = TangledTower.HERO_X + 30;
 
     // Red "!" warning
-    var warn = this.add.text(warnX, warnY, '!', {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: '#FF0000',
-      stroke: '#000000',
-      strokeThickness: 2,
-      fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(30);
+    var warn = TangledTower.bmpText(this, warnX, warnY, '!', 16, 0xFF0000, 30);
 
     // Arrow indicating where to dodge
     var hintText = isGround ? 'JUMP!' : 'CROUCH!';
-    var hint = this.add.text(warnX, warnY + 14, hintText, {
-      fontFamily: 'monospace',
-      fontSize: '6px',
-      color: '#FFFF00',
-      stroke: '#000000',
-      strokeThickness: 1
-    }).setOrigin(0.5).setDepth(30);
+    var hint = TangledTower.bmpText(this, warnX, warnY + 14, hintText, 8, 0xFFFF00, 30);
 
     // Flash and remove
+    var warnShadow = warn._shadow;
+    var hintShadow = hint._shadow;
     this.tweens.add({
-      targets: [warn, hint],
+      targets: [warn, hint, warnShadow, hintShadow],
       alpha: { from: 1, to: 0.3 },
       duration: 200,
       yoyo: true,
@@ -301,6 +283,8 @@ TangledTower.BossScene = new Phaser.Class({
       onComplete: function() {
         warn.destroy();
         hint.destroy();
+        if (warnShadow) warnShadow.destroy();
+        if (hintShadow) hintShadow.destroy();
       }
     });
   },
@@ -564,14 +548,7 @@ TangledTower.BossScene = new Phaser.Class({
     this.totalScore += 500;
 
     // "BOSS DEFEATED!" text
-    var defeatText = this.add.text(TangledTower.GAME_WIDTH / 2, TangledTower.GAME_HEIGHT / 2 - 20, 'BOSS DEFEATED!', {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: '#FFD700',
-      stroke: '#000000',
-      strokeThickness: 3,
-      fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(50);
+    var defeatText = TangledTower.bmpText(this, TangledTower.GAME_WIDTH / 2, TangledTower.GAME_HEIGHT / 2 - 20, 'BOSS DEFEATED!', 16, 0xFFD700, 50);
 
     this.tweens.add({
       targets: defeatText,

@@ -143,48 +143,35 @@ TangledTower.VictoryScene = new Phaser.Class({
     // Cutscene text
     var lines = TangledTower.VICTORY_TEXT;
     var lineY = 30;
+    var totalLines = lines.length;
 
     var self = this;
     for (var i = 0; i < lines.length; i++) {
-      this.time.delayedCall(i * 1500, function(text, y) {
-        var t = self.add.text(w / 2, y, text, {
-          fontFamily: 'monospace',
-          fontSize: i === lines.length - 1 ? '16px' : '8px',
-          color: i === lines.length - 1 ? '#FFD700' : '#FFFFFF',
-          stroke: '#000000',
-          strokeThickness: 2,
-          fontStyle: i === lines.length - 1 ? 'bold' : 'normal'
-        }).setOrigin(0.5).setAlpha(0);
+      this.time.delayedCall(i * 1500, function(text, y, idx) {
+        var isLast = idx === totalLines - 1;
+        var size = isLast ? 16 : 8;
+        var tint = isLast ? 0xFFD700 : 0xFFFFFF;
+        var t = TangledTower.bmpText(self, w / 2, y, text, size, tint);
+        t.setAlpha(0);
+        if (t._shadow) t._shadow.setAlpha(0);
 
         self.tweens.add({
-          targets: t,
+          targets: [t, t._shadow],
           alpha: 1,
           duration: 500
         });
-      }.bind(null, lines[i], lineY + i * 18));
+      }.bind(null, lines[i], lineY + i * 18, i));
     }
 
     // Score summary
     this.time.delayedCall(lines.length * 1500 + 500, function() {
-      self.add.text(w / 2, h / 2 + 30, 'FINAL SCORE: ' + self.finalScore, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#FFD700',
-        stroke: '#000000',
-        strokeThickness: 2
-      }).setOrigin(0.5);
+      TangledTower.bmpText(self, w / 2, h / 2 + 30, 'FINAL SCORE: ' + self.finalScore, 16, 0xFFD700);
 
       // Play again
-      var again = self.add.text(w / 2, h / 2 + 55, 'TAP TO PLAY AGAIN', {
-        fontFamily: 'monospace',
-        fontSize: '8px',
-        color: '#FFFFFF',
-        stroke: '#000000',
-        strokeThickness: 1
-      }).setOrigin(0.5);
+      var again = TangledTower.bmpText(self, w / 2, h / 2 + 55, 'TAP TO PLAY AGAIN', 8, 0xFFFFFF);
 
       self.tweens.add({
-        targets: again,
+        targets: [again, again._shadow],
         alpha: 0.3,
         duration: 500,
         yoyo: true,

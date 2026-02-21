@@ -36,22 +36,14 @@ TangledTower.UIScene = new Phaser.Class({
     }
 
     // Score text
-    this.scoreText = this.add.text(w - 10, 6, 'SCORE: 0', {
-      fontFamily: 'monospace',
-      fontSize: '7px',
-      color: '#FFFFFF',
-      stroke: '#000000',
-      strokeThickness: 2
-    }).setOrigin(1, 0).setDepth(100);
+    this.scoreText = this.add.bitmapText(w - 8, 6, 'pixel-font', 'SCORE: 0', 8)
+      .setOrigin(1, 0).setDepth(100);
+    this.scoreShadow = this.add.bitmapText(w - 7, 7, 'pixel-font', 'SCORE: 0', 8)
+      .setOrigin(1, 0).setDepth(99).setTint(0x000000);
 
     // Level text
-    this.levelText = this.add.text(w - 10, 18, 'LEVEL ' + this.currentLevel, {
-      fontFamily: 'monospace',
-      fontSize: '6px',
-      color: '#FFD700',
-      stroke: '#000000',
-      strokeThickness: 1
-    }).setOrigin(1, 0).setDepth(100);
+    this.levelText = this.add.bitmapText(w - 8, 16, 'pixel-font-gold', 'LEVEL ' + this.currentLevel, 8)
+      .setOrigin(1, 0).setDepth(100);
 
     // Listen for updates from GameScene or BossScene
     var gameScene = this.scene.get('GameScene');
@@ -69,7 +61,11 @@ TangledTower.UIScene = new Phaser.Class({
 
   _onUpdate: function(data) {
     if (data.health !== undefined) this._updateHearts(data.health);
-    if (data.score !== undefined) this.scoreText.setText('SCORE: ' + data.score);
+    if (data.score !== undefined) {
+      var scoreStr = 'SCORE: ' + data.score;
+      this.scoreText.setText(scoreStr);
+      this.scoreShadow.setText(scoreStr);
+    }
     if (data.level !== undefined) this.levelText.setText('LEVEL ' + data.level);
   },
 
