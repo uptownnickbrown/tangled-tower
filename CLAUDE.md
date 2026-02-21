@@ -45,9 +45,9 @@ Uses Google Gemini Imagen 4.0 via `scripts/.venv/`. API key stored in `.env` (gi
 
 3. **Background removal is a simple global color match:**
    - Sample the background color from the 4 corners of the image
-   - Remove any pixel within tolerance=55 of that color (fully transparent)
-   - Gentle anti-alias fade for pixels in the 55-88 range
-   - This works because rule #2 ensures no sprite content shares the chroma color
+   - Remove any pixel within tolerance=90 of that color (fully transparent)
+   - Tight anti-alias fade for pixels in the 90-120 range
+   - Wide tolerance is safe because rule #2 ensures no sprite content shares the chroma color
 
 4. **Standard prompt suffix template:**
    - `"Single character only, no text, no labels, no ground."`

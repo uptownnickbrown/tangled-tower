@@ -34,12 +34,13 @@ output_dir = Path(__file__).parent.parent / "assets" / "sprites"
 output_dir.mkdir(parents=True, exist_ok=True)
 
 
-def remove_background(img, tolerance=55):
+def remove_background(img, tolerance=90):
     """Remove background by color matching against sampled corner color.
 
     Since prompts tell the AI to avoid the chroma key color in the sprite,
-    we can safely do a simple global pass: any pixel close to the background
-    color gets removed, everywhere in the image. No flood-fill needed.
+    we can safely use a wide tolerance. Any pixel close to the background
+    color gets removed. The AI color-avoidance instructions ensure sprite
+    content stays far from the chroma key color.
     """
     img_rgba = img.convert("RGBA")
     pixels = img_rgba.load()
@@ -65,9 +66,9 @@ def remove_background(img, tolerance=55):
             if dist < tolerance:
                 pixels[x, y] = (0, 0, 0, 0)
                 removed += 1
-            elif dist < tolerance * 1.6:
-                # Gentle anti-alias fade at edges
-                alpha_factor = (dist - tolerance) / (tolerance * 0.6)
+            elif dist < tolerance + 30:
+                # Tight anti-alias fade just past the cutoff
+                alpha_factor = (dist - tolerance) / 30.0
                 new_alpha = int(a * max(0, min(1, alpha_factor)))
                 pixels[x, y] = (r, g, b, new_alpha)
 
