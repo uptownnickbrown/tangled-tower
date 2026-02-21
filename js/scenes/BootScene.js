@@ -29,7 +29,8 @@ TangledTower.BootScene = new Phaser.Class({
       'tower', 'goblin', 'bat', 'vine',
       'boss_troll', 'boss_vine', 'boss_bat', 'boss_knight', 'boss_dragon',
       'powerup_shield', 'powerup_boots', 'powerup_sword',
-      'coin', 'heart'
+      'coin', 'heart',
+      'bg_tree', 'bg_bush', 'bg_rock', 'butterfly', 'firefly'
     ];
 
     for (var i = 0; i < sprites.length; i++) {

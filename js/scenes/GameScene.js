@@ -45,6 +45,9 @@ TangledTower.GameScene = new Phaser.Class({
     // Parallax backgrounds
     this._createBackgrounds(levelData);
 
+    // Decorative scenery
+    this._createScenery(levelData);
+
     // Ground
     this._createGround();
 
@@ -117,6 +120,9 @@ TangledTower.GameScene = new Phaser.Class({
 
     // Scroll ground
     this._scrollGround(effectiveSpeed, dt);
+
+    // Scroll scenery
+    this._scrollScenery(effectiveSpeed, dt);
 
     // Scroll all objects
     this._scrollObjects(this.vines, effectiveSpeed, dt);
@@ -270,6 +276,135 @@ TangledTower.GameScene = new Phaser.Class({
   _scrollGround: function(speed, dt) {
     if (this.groundTileSprite) {
       this.groundTileSprite.tilePositionX += speed * dt;
+    }
+  },
+
+  // --- Decorative Scenery ---
+
+  _createScenery: function(levelData) {
+    var w = TangledTower.GAME_WIDTH;
+    this.sceneryItems = [];
+    this._sceneryTimer = 0;
+    this._ambientTimer = 0;
+    this.ambientItems = [];
+
+    // Place initial scenery across the screen
+    var hasTree = this.textures.exists('bg_tree');
+    var hasBush = this.textures.exists('bg_bush');
+    var hasRock = this.textures.exists('bg_rock');
+
+    if (hasTree || hasBush || hasRock) {
+      for (var i = 0; i < 5; i++) {
+        var x = Phaser.Math.Between(0, w);
+        this._addSceneryAt(x);
+      }
+    }
+
+    // Add initial ambient creatures
+    var isNight = levelData.id >= 4;
+    var hasButterfly = this.textures.exists('butterfly');
+    var hasFirefly = this.textures.exists('firefly');
+    if ((isNight && hasFirefly) || (!isNight && hasButterfly)) {
+      for (var j = 0; j < 3; j++) {
+        this._addAmbientCreature(Phaser.Math.Between(40, w - 40));
+      }
+    }
+  },
+
+  _addSceneryAt: function(x) {
+    var groundY = TangledTower.GROUND_Y;
+    var types = [];
+    if (this.textures.exists('bg_tree')) types.push('bg_tree');
+    if (this.textures.exists('bg_bush')) types.push('bg_bush');
+    if (this.textures.exists('bg_rock')) types.push('bg_rock');
+    if (types.length === 0) return;
+
+    var type = Phaser.Utils.Array.GetRandom(types);
+    var scales = { bg_tree: 0.04, bg_bush: 0.02, bg_rock: 0.015 };
+    var scale = (scales[type] || 0.03) * Phaser.Math.FloatBetween(0.8, 1.2);
+
+    var item = this.add.sprite(x, groundY, type).setOrigin(0.5, 1).setScale(scale);
+    item.setDepth(type === 'bg_tree' ? 1 : 2);
+    item.setAlpha(type === 'bg_tree' ? 0.7 : 0.8); // Background feel
+    item._scrollSpeed = type === 'bg_tree' ? 0.5 : 0.7; // Parallax factor
+    this.sceneryItems.push(item);
+  },
+
+  _addAmbientCreature: function(x) {
+    var isNight = this.levelData.id >= 4;
+    var key = isNight ? 'firefly' : 'butterfly';
+    if (!this.textures.exists(key)) return;
+
+    var y = Phaser.Math.Between(40, TangledTower.GROUND_Y - 40);
+    var scale = isNight ? 0.01 : 0.012;
+    var creature = this.add.sprite(x, y, key).setScale(scale).setDepth(3);
+
+    // Gentle floating motion
+    this.tweens.add({
+      targets: creature,
+      y: y + Phaser.Math.Between(-15, 15),
+      x: x + Phaser.Math.Between(-20, 20),
+      duration: Phaser.Math.Between(2000, 4000),
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
+    // Fireflies glow
+    if (isNight) {
+      this.tweens.add({
+        targets: creature,
+        alpha: { from: 0.4, to: 1 },
+        duration: Phaser.Math.Between(500, 1500),
+        yoyo: true,
+        repeat: -1
+      });
+    }
+
+    creature._scrollSpeed = 0.3;
+    this.ambientItems.push(creature);
+  },
+
+  _scrollScenery: function(speed, dt) {
+    var px = speed * dt;
+    var w = TangledTower.GAME_WIDTH;
+
+    // Scroll and recycle scenery
+    for (var i = this.sceneryItems.length - 1; i >= 0; i--) {
+      var item = this.sceneryItems[i];
+      item.x -= px * item._scrollSpeed;
+      if (item.x < -60) {
+        item.destroy();
+        this.sceneryItems.splice(i, 1);
+      }
+    }
+
+    // Scroll ambient creatures
+    for (var j = this.ambientItems.length - 1; j >= 0; j--) {
+      var amb = this.ambientItems[j];
+      amb.x -= px * amb._scrollSpeed;
+      if (amb.x < -40) {
+        amb.destroy();
+        this.ambientItems.splice(j, 1);
+      }
+    }
+
+    // Spawn new scenery
+    this._sceneryTimer += dt;
+    if (this._sceneryTimer > 1.5) {
+      this._sceneryTimer = 0;
+      if (Math.random() < 0.6) {
+        this._addSceneryAt(w + 40);
+      }
+    }
+
+    // Spawn new ambient creatures
+    this._ambientTimer += dt;
+    if (this._ambientTimer > 4) {
+      this._ambientTimer = 0;
+      if (Math.random() < 0.4) {
+        this._addAmbientCreature(w + 30);
+      }
     }
   },
 
