@@ -1,0 +1,8 @@
+{
+  "name": "tangled-tower",
+  "version": "1.0.0",
+  "description": "A Rapunzel-themed auto-runner game for kids",
+  "scripts": {
+    "start": "npx serve ."
+  }
+}
