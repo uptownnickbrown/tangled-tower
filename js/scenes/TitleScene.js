@@ -1,0 +1,117 @@
+// Tangled Tower - Title Screen
+var TangledTower = TangledTower || {};
+
+TangledTower.TitleScene = new Phaser.Class({
+  Extends: Phaser.Scene,
+
+  initialize: function TitleScene() {
+    Phaser.Scene.call(this, { key: 'TitleScene' });
+  },
+
+  create: function() {
+    var w = TangledTower.GAME_WIDTH;
+    var h = TangledTower.GAME_HEIGHT;
+
+    // Sky background
+    this.cameras.main.setBackgroundColor(0x88CCFF);
+
+    // Ground strip at bottom
+    var groundGfx = this.add.graphics();
+    groundGfx.fillStyle(0x55CC55, 1);
+    groundGfx.fillRect(0, h - 40, w, 6);
+    groundGfx.fillStyle(0x885522, 1);
+    groundGfx.fillRect(0, h - 34, w, 34);
+
+    // Simple clouds
+    this._drawCloud(80, 50, 1.5);
+    this._drawCloud(250, 30, 1);
+    this._drawCloud(380, 60, 1.2);
+
+    // Tower silhouette on right
+    if (this.textures.exists('tower')) {
+      this.add.sprite(w - 60, h - 80, 'tower').setOrigin(0.5, 1).setScale(1);
+    }
+
+    // Title text
+    this.add.text(w / 2, 40, 'TANGLED', {
+      fontFamily: 'monospace',
+      fontSize: '28px',
+      color: '#FFD700',
+      stroke: '#000000',
+      strokeThickness: 3,
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    this.add.text(w / 2, 72, 'TOWER', {
+      fontFamily: 'monospace',
+      fontSize: '28px',
+      color: '#FFD700',
+      stroke: '#000000',
+      strokeThickness: 3,
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    // Hero sprite running in place
+    if (this.textures.exists('hero')) {
+      var hero = this.add.sprite(100, h - 50, 'hero', 0);
+      hero.setScale(2);
+      hero.play('hero-run');
+    }
+
+    // Tap to start - blinking
+    var startText = this.add.text(w / 2, h - 70, 'TAP TO START', {
+      fontFamily: 'monospace',
+      fontSize: '10px',
+      color: '#FFFFFF',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: startText,
+      alpha: 0.2,
+      duration: 500,
+      yoyo: true,
+      repeat: -1
+    });
+
+    // Sound toggle hint
+    this.add.text(w - 10, 10, 'SOUND: ON', {
+      fontFamily: 'monospace',
+      fontSize: '6px',
+      color: '#FFFFFF',
+      stroke: '#000000',
+      strokeThickness: 1
+    }).setOrigin(1, 0);
+
+    // Wait for input
+    var self = this;
+    var started = false;
+
+    var startGame = function() {
+      if (started) return;
+      started = true;
+
+      // Initialize audio on first interaction (iOS requirement)
+      TangledTower.AudioGen.init();
+      TangledTower.AudioGen.playMenuSelect();
+
+      // Brief delay then start
+      self.cameras.main.fadeOut(500, 0, 0, 0);
+      self.time.delayedCall(500, function() {
+        self.scene.start('CutsceneScene', { level: 0, score: 0, lives: 3 });
+      });
+    };
+
+    this.input.on('pointerdown', startGame);
+    this.input.keyboard.on('keydown-SPACE', startGame);
+  },
+
+  _drawCloud: function(x, y, scale) {
+    var gfx = this.add.graphics();
+    gfx.fillStyle(0xFFFFFF, 0.9);
+    gfx.fillEllipse(x, y, 30 * scale, 12 * scale);
+    gfx.fillEllipse(x - 10 * scale, y + 2, 16 * scale, 8 * scale);
+    gfx.fillEllipse(x + 12 * scale, y + 2, 20 * scale, 8 * scale);
+  }
+});
