@@ -9,7 +9,7 @@ TangledTower.UIScene = new Phaser.Class({
   },
 
   init: function(data) {
-    this.currentHealth = data.health || 3;
+    this.currentHealth = data.health || TangledTower.STARTING_LIVES;
     this.currentScore = data.score || 0;
     this.currentLevel = data.level || 1;
     this.levelName = data.levelName || '';
@@ -20,16 +20,17 @@ TangledTower.UIScene = new Phaser.Class({
 
     // Hearts
     this.hearts = [];
-    for (var i = 0; i < 3; i++) {
+    var maxLives = TangledTower.STARTING_LIVES;
+    for (var i = 0; i < maxLives; i++) {
       var heartKey = this.textures.exists('heart') ? 'heart' : null;
       var heart;
       if (heartKey) {
         var heartTex = this.textures.get('heart');
         var isAIHeart = heartTex.source[0].width > 32;
-        var heartScale = isAIHeart ? 0.012 : 1.2;
-        heart = this.add.sprite(12 + i * 16, 12, 'heart').setScale(heartScale);
+        var heartScale = isAIHeart ? 0.016 : 1.2;
+        heart = this.add.sprite(12 + i * 13, 12, 'heart').setScale(heartScale);
       } else {
-        heart = this.add.circle(12 + i * 14, 12, 5, 0xFF3344);
+        heart = this.add.circle(12 + i * 13, 12, 5, 0xFF3344);
       }
       heart.setDepth(100);
       this.hearts.push(heart);

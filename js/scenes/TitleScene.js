@@ -76,7 +76,7 @@ TangledTower.TitleScene = new Phaser.Class({
       // Brief delay then start
       self.cameras.main.fadeOut(500, 0, 0, 0);
       self.time.delayedCall(500, function() {
-        self.scene.start('CutsceneScene', { level: 0, score: 0, lives: 3 });
+        self.scene.start('CutsceneScene', { level: 0, score: 0, lives: TangledTower.STARTING_LIVES });
       });
     };
 

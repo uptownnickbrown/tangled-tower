@@ -14,17 +14,20 @@ TangledTower.SPAWN_X = 520;         // Objects spawn off right edge
 
 // AI sprite sizes (used for scaling 1024x1024 PNGs down to game size)
 TangledTower.HERO_SCALE = 0.04;     // ~41px tall in game
-TangledTower.ENEMY_SCALE = 0.035;   // ~36px tall
+TangledTower.ENEMY_SCALE = 0.05;    // ~51px tall
 TangledTower.BOSS_SCALE = 0.09;     // ~92px tall
 TangledTower.TOWER_SCALE = 0.18;    // ~184px tall
-TangledTower.POWERUP_SCALE = 0.02;  // ~20px
-TangledTower.VINE_SCALE = 0.04;     // ~41px tall
+TangledTower.POWERUP_SCALE = 0.03;  // ~31px
+TangledTower.VINE_SCALE = 0.06;     // ~60px tall
+
+// Lives
+TangledTower.STARTING_LIVES = 5;
 
 // Physics
-TangledTower.GRAVITY = 900;
-TangledTower.JUMP_VELOCITY = -320;
-TangledTower.DOUBLE_JUMP_VELOCITY = -280;
-TangledTower.CHARGED_JUMP_VELOCITY = -440;
+TangledTower.GRAVITY = 800;
+TangledTower.JUMP_VELOCITY = -380;
+TangledTower.DOUBLE_JUMP_VELOCITY = -340;
+TangledTower.CHARGED_JUMP_VELOCITY = -500;
 TangledTower.CROUCH_THRESHOLD = 200; // ms hold before crouch activates
 
 // Gameplay

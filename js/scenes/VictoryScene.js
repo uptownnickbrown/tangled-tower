@@ -10,7 +10,7 @@ TangledTower.VictoryScene = new Phaser.Class({
 
   init: function(data) {
     this.finalScore = data.score || 0;
-    this.lives = data.lives || 3;
+    this.lives = data.lives || TangledTower.STARTING_LIVES;
   },
 
   create: function() {

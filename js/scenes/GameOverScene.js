@@ -50,7 +50,7 @@ TangledTower.GameOverScene = new Phaser.Class({
         self.scene.start('CutsceneScene', {
           level: self.levelIndex,
           score: 0,
-          lives: 3
+          lives: TangledTower.STARTING_LIVES
         });
       });
     };

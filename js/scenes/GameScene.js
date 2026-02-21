@@ -11,7 +11,7 @@ TangledTower.GameScene = new Phaser.Class({
   init: function(data) {
     this.levelIndex = data.level || 0;
     this.totalScore = data.score || 0;
-    this.lives = data.lives || 3;
+    this.lives = data.lives || TangledTower.STARTING_LIVES;
   },
 
   create: function() {
@@ -70,12 +70,24 @@ TangledTower.GameScene = new Phaser.Class({
     this.physics.add.overlap(this.hero, this.powerups, this._collectPowerup, null, this);
 
     // Shield visual (follows hero)
-    this.shieldBubble = this.add.circle(0, 0, 12, 0x44DDFF, 0.3).setVisible(false);
+    this.shieldBubble = this.add.circle(0, 0, 22, 0x44DDFF, 0.25).setVisible(false).setDepth(11);
+    this.tweens.add({
+      targets: this.shieldBubble,
+      scaleX: { from: 1, to: 1.15 },
+      scaleY: { from: 1, to: 1.15 },
+      alpha: { from: 0.25, to: 0.15 },
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
 
-    // Sword orbit visual
+    // Sword orbit visual — check both procedural and AI keys
     this.swordOrbit = null;
-    if (this.textures.exists('sword-powerup')) {
-      this.swordOrbit = this.add.sprite(0, 0, 'sword-powerup', 0).setVisible(false).setScale(0.8);
+    if (this.textures.exists('powerup_sword')) {
+      this.swordOrbit = this.add.sprite(0, 0, 'powerup_sword').setVisible(false).setScale(TangledTower.POWERUP_SCALE * 0.8).setDepth(11);
+    } else if (this.textures.exists('sword-powerup')) {
+      this.swordOrbit = this.add.sprite(0, 0, 'sword-powerup', 0).setVisible(false).setScale(0.8).setDepth(11);
     }
     this.swordAngle = 0;
 
@@ -321,12 +333,14 @@ TangledTower.GameScene = new Phaser.Class({
 
     var type = Phaser.Utils.Array.GetRandom(types);
     var scales = { bg_tree: 0.04, bg_bush: 0.02, bg_rock: 0.015 };
-    var scale = (scales[type] || 0.03) * Phaser.Math.FloatBetween(0.8, 1.2);
+    var depthMult = Phaser.Math.FloatBetween(0.7, 1.3);
+    var scale = (scales[type] || 0.03) * Phaser.Math.FloatBetween(0.8, 1.2) * depthMult;
 
     var item = this.add.sprite(x, groundY, type).setOrigin(0.5, 1).setScale(scale);
     item.setDepth(type === 'bg_tree' ? 1 : 2);
-    item.setAlpha(type === 'bg_tree' ? 0.7 : 0.8); // Background feel
-    item._scrollSpeed = type === 'bg_tree' ? 0.5 : 0.7; // Parallax factor
+    item.setAlpha(type === 'bg_tree' ? 0.7 : 0.8);
+    var baseSpeeds = { bg_tree: 0.8, bg_bush: 0.95, bg_rock: 0.95 };
+    item._scrollSpeed = (baseSpeeds[type] || 0.8) * depthMult;
     this.sceneryItems.push(item);
   },
 
@@ -361,7 +375,7 @@ TangledTower.GameScene = new Phaser.Class({
       });
     }
 
-    creature._scrollSpeed = 0.3;
+    creature._scrollSpeed = 0.6;
     this.ambientItems.push(creature);
   },
 
@@ -391,18 +405,18 @@ TangledTower.GameScene = new Phaser.Class({
 
     // Spawn new scenery
     this._sceneryTimer += dt;
-    if (this._sceneryTimer > 1.5) {
+    if (this._sceneryTimer > 0.8) {
       this._sceneryTimer = 0;
-      if (Math.random() < 0.6) {
+      if (Math.random() < 0.75) {
         this._addSceneryAt(w + 40);
       }
     }
 
     // Spawn new ambient creatures
     this._ambientTimer += dt;
-    if (this._ambientTimer > 4) {
+    if (this._ambientTimer > 2.5) {
       this._ambientTimer = 0;
-      if (Math.random() < 0.4) {
+      if (Math.random() < 0.5) {
         this._addAmbientCreature(w + 30);
       }
     }
@@ -506,7 +520,7 @@ TangledTower.GameScene = new Phaser.Class({
       coin.setActive(true).setVisible(true);
       coin.body.enable = true;
       if (isAI) {
-        var coinScale = 0.015;
+        var coinScale = 0.02;
         coin.setScale(coinScale);
         var coinSize = coin.displayWidth * 0.7;
         coin.body.setSize(coinSize / coinScale, coinSize / coinScale);
@@ -718,6 +732,8 @@ TangledTower.GameScene = new Phaser.Class({
         }
       });
       hero.body.velocity.y = -200; // Bounce
+      TangledTower.InputManager.jumpCount = 1;
+      TangledTower.InputManager.hasJumpedThisPress = true;
       this.score += 100;
       TangledTower.AudioGen.playEnemyDefeat();
 
@@ -752,6 +768,18 @@ TangledTower.GameScene = new Phaser.Class({
       this.hasSword = false;
       if (this.swordOrbit) this.swordOrbit.setVisible(false);
       TangledTower.AudioGen.playSword();
+      // "BLOCKED!" popup + silver particles + flash
+      var swordPopup = this.add.bitmapText(this.hero.x, this.hero.y - 20, 'pixel-font', 'BLOCKED!', 8)
+        .setOrigin(0.5).setDepth(20).setTint(0xCCCCDD);
+      this.tweens.add({
+        targets: swordPopup,
+        y: this.hero.y - 50,
+        alpha: 0,
+        duration: 700,
+        onComplete: function() { swordPopup.destroy(); }
+      });
+      this._spawnParticles(this.hero.x, this.hero.y, 0xCCCCDD, 6);
+      this.cameras.main.flash(100, 200, 200, 220, true);
       return;
     }
 
@@ -760,6 +788,18 @@ TangledTower.GameScene = new Phaser.Class({
       this.hasShield = false;
       this.shieldBubble.setVisible(false);
       TangledTower.AudioGen.playHit();
+      // "SHIELD!" popup + cyan particles + flash
+      var shieldPopup = this.add.bitmapText(this.hero.x, this.hero.y - 20, 'pixel-font', 'SHIELD!', 8)
+        .setOrigin(0.5).setDepth(20).setTint(0x44DDFF);
+      this.tweens.add({
+        targets: shieldPopup,
+        y: this.hero.y - 50,
+        alpha: 0,
+        duration: 700,
+        onComplete: function() { shieldPopup.destroy(); }
+      });
+      this._spawnParticles(this.hero.x, this.hero.y, 0x44DDFF, 6);
+      this.cameras.main.flash(100, 68, 221, 255, true);
       return;
     }
 
@@ -795,7 +835,11 @@ TangledTower.GameScene = new Phaser.Class({
     this.hero.play('hero-hurt');
     this.time.delayedCall(300, function() {
       if (!self.gameOver) {
-        self.hero.play('hero-run', true);
+        if (TangledTower.InputManager.isCrouching) {
+          self.hero.play('hero-crouch', true);
+        } else {
+          self.hero.play('hero-run', true);
+        }
       }
     });
 
@@ -986,11 +1030,27 @@ TangledTower.GameScene = new Phaser.Class({
 
   // Callbacks for InputManager
   onCrouchStart: function() {
-    // Could add dust particles or sound
+    // Visual feedback: shift hero down, dust puff, tint
+    if (this.hero) {
+      this.tweens.add({
+        targets: this.hero,
+        y: this.hero.y + 5,
+        duration: 100,
+        ease: 'Quad.easeOut'
+      });
+      this.hero.setTint(0xDDDDCC);
+      this._spawnParticles(this.hero.x - 6, TangledTower.GROUND_Y, 0xBBAA88, 3);
+      this._spawnParticles(this.hero.x + 6, TangledTower.GROUND_Y, 0xBBAA88, 3);
+    }
   },
 
   onCrouchEnd: function() {
-    // Could add jump particles
+    // Clear tint, upward dust burst for launch
+    if (this.hero) {
+      this.hero.clearTint();
+      this._spawnParticles(this.hero.x - 5, TangledTower.GROUND_Y, 0xDDCC99, 4);
+      this._spawnParticles(this.hero.x + 5, TangledTower.GROUND_Y, 0xDDCC99, 4);
+    }
   },
 
   shutdown: function() {

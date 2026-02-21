@@ -11,7 +11,7 @@ TangledTower.CutsceneScene = new Phaser.Class({
   init: function(data) {
     this.levelIndex = data.level || 0;
     this.totalScore = data.score || 0;
-    this.lives = data.lives || 3;
+    this.lives = data.lives || TangledTower.STARTING_LIVES;
     this.skipIntro = data.skipIntro || false;
     // Reset all state flags (critical for scene.restart() which reuses instance)
     this.transitioning = false;
@@ -207,7 +207,7 @@ TangledTower.CutsceneScene = new Phaser.Class({
         // After intro, show the Level 1 cutscene
         this.time.delayedCall(400, function() {
           self.isIntro = false;
-          self.scene.restart({ level: 0, score: 0, lives: 3, skipIntro: true });
+          self.scene.restart({ level: 0, score: 0, lives: TangledTower.STARTING_LIVES, skipIntro: true });
         });
       } else {
         this.time.delayedCall(400, function() {

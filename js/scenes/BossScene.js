@@ -11,7 +11,7 @@ TangledTower.BossScene = new Phaser.Class({
   init: function(data) {
     this.levelIndex = data.level || 0;
     this.totalScore = data.score || 0;
-    this.health = data.lives || 3;
+    this.health = data.lives || TangledTower.STARTING_LIVES;
   },
 
   create: function() {
@@ -118,7 +118,17 @@ TangledTower.BossScene = new Phaser.Class({
     this.warningIcons = [];
 
     // Shield bubble
-    this.shieldBubble = this.add.circle(0, 0, 12, 0x44DDFF, 0.3).setVisible(false).setDepth(11);
+    this.shieldBubble = this.add.circle(0, 0, 22, 0x44DDFF, 0.25).setVisible(false).setDepth(11);
+    this.tweens.add({
+      targets: this.shieldBubble,
+      scaleX: { from: 1, to: 1.15 },
+      scaleY: { from: 1, to: 1.15 },
+      alpha: { from: 0.25, to: 0.15 },
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
 
     // Input
     TangledTower.InputManager.setup(this);
@@ -469,7 +479,13 @@ TangledTower.BossScene = new Phaser.Class({
 
     this.hero.play('hero-hurt');
     this.time.delayedCall(300, function() {
-      if (!self.gameOver) self.hero.play('hero-run', true);
+      if (!self.gameOver) {
+        if (TangledTower.InputManager.isCrouching) {
+          self.hero.play('hero-crouch', true);
+        } else {
+          self.hero.play('hero-run', true);
+        }
+      }
     });
 
     this.cameras.main.shake(200, 0.015);
