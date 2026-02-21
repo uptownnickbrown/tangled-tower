@@ -43,10 +43,11 @@ Uses Google Gemini Imagen 4.0 via `scripts/.venv/`. API key stored in `.env` (gi
    - For green backgrounds, add to prompt: `"IMPORTANT: Do not use any bright green or lime colors anywhere in the image."`
    - Suggest an alternative color if the natural choice conflicts (e.g. "royal blue dress" instead of "purple dress")
 
-3. **Background removal uses two phases:**
-   - Phase 1: Flood-fill from image edges (generous tolerance=60) — removes connected background
-   - Phase 2: Strict per-pixel pass (tolerance=25) — catches trapped pockets between wings/spikes
-   - This combo preserves interior colors while cleaning trapped background between complex shapes
+3. **Background removal is a simple global color match:**
+   - Sample the background color from the 4 corners of the image
+   - Remove any pixel within tolerance=55 of that color (fully transparent)
+   - Gentle anti-alias fade for pixels in the 55-88 range
+   - This works because rule #2 ensures no sprite content shares the chroma color
 
 4. **Standard prompt suffix template:**
    - `"Single character only, no text, no labels, no ground."`

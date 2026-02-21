@@ -7,7 +7,6 @@ Uses flood-fill from edges to remove background — never touches interior pixel
 import os
 import sys
 from pathlib import Path
-from collections import deque
 
 # Load API key from .env
 env_path = Path(__file__).parent.parent / ".env"
@@ -35,16 +34,12 @@ output_dir = Path(__file__).parent.parent / "assets" / "sprites"
 output_dir.mkdir(parents=True, exist_ok=True)
 
 
-def remove_background(img, tolerance=60, strict_tolerance=25):
-    """Remove background using flood-fill + strict cleanup pass.
+def remove_background(img, tolerance=55):
+    """Remove background by color matching against sampled corner color.
 
-    Phase 1: Flood-fill from edges with generous tolerance — removes
-    the bulk of the background while respecting sprite boundaries.
-
-    Phase 2: Strict cleanup — removes any remaining pixels that are
-    very close to the exact background color (tight tolerance).
-    This catches trapped pockets between wings/spikes without
-    touching similar-but-different colors like a purple dress.
+    Since prompts tell the AI to avoid the chroma key color in the sprite,
+    we can safely do a simple global pass: any pixel close to the background
+    color gets removed, everywhere in the image. No flood-fill needed.
     """
     img_rgba = img.convert("RGBA")
     pixels = img_rgba.load()
@@ -61,69 +56,23 @@ def remove_background(img, tolerance=60, strict_tolerance=25):
     bg_b = sum(s[2] for s in corner_samples) // len(corner_samples)
     print(f"  Detected background color: RGB({bg_r}, {bg_g}, {bg_b})")
 
-    def color_distance(r, g, b):
-        return ((r - bg_r) ** 2 + (g - bg_g) ** 2 + (b - bg_b) ** 2) ** 0.5
-
-    # --- Phase 1: Flood-fill from edges ---
-    visited = [[False] * h for _ in range(w)]
     removed = 0
-
-    queue = deque()
-    for x in range(w):
-        queue.append((x, 0))
-        queue.append((x, h - 1))
-    for y in range(h):
-        queue.append((0, y))
-        queue.append((w - 1, y))
-
-    while queue:
-        x, y = queue.popleft()
-        if x < 0 or x >= w or y < 0 or y >= h:
-            continue
-        if visited[x][y]:
-            continue
-        visited[x][y] = True
-
-        r, g, b, a = pixels[x, y]
-        dist = color_distance(r, g, b)
-
-        if dist < tolerance:
-            pixels[x, y] = (0, 0, 0, 0)
-            removed += 1
-            queue.append((x + 1, y))
-            queue.append((x - 1, y))
-            queue.append((x, y + 1))
-            queue.append((x, y - 1))
-        elif dist < tolerance * 1.5:
-            alpha_factor = (dist - tolerance) / (tolerance * 0.5)
-            new_alpha = int(a * max(0, min(1, alpha_factor)))
-            pixels[x, y] = (r, g, b, new_alpha)
-
-    # --- Phase 2: Strict cleanup for trapped pockets ---
-    # Only removes pixels VERY close to the exact background color.
-    # E.g. pure magenta (#FF00FF) vs Rapunzel's dress purple (#9944BB)
-    # have distance ~180, so strict_tolerance=25 won't touch the dress.
-    cleaned = 0
     for y in range(h):
         for x in range(w):
-            if visited[x][y]:
-                continue  # Already handled by flood-fill
             r, g, b, a = pixels[x, y]
-            if a == 0:
-                continue  # Already transparent
-            dist = color_distance(r, g, b)
-            if dist < strict_tolerance:
+            dist = ((r - bg_r) ** 2 + (g - bg_g) ** 2 + (b - bg_b) ** 2) ** 0.5
+
+            if dist < tolerance:
                 pixels[x, y] = (0, 0, 0, 0)
-                cleaned += 1
-            elif dist < strict_tolerance * 2:
-                alpha_factor = (dist - strict_tolerance) / strict_tolerance
+                removed += 1
+            elif dist < tolerance * 1.6:
+                # Gentle anti-alias fade at edges
+                alpha_factor = (dist - tolerance) / (tolerance * 0.6)
                 new_alpha = int(a * max(0, min(1, alpha_factor)))
                 pixels[x, y] = (r, g, b, new_alpha)
 
-    print(f"  Phase 1 (flood-fill): removed {removed} pixels")
-    print(f"  Phase 2 (strict cleanup): removed {cleaned} trapped pixels")
-
-    return img_rgba, removed + cleaned
+    print(f"  Removed {removed} background pixels")
+    return img_rgba, removed
 
 
 def generate_sprite(prompt, name, chroma_color="magenta"):
