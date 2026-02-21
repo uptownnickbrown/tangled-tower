@@ -64,12 +64,6 @@ TangledTower.VictoryScene = new Phaser.Class({
       gfx.fillRect(w / 2 - 6, h - 108, 12, 14);
     }
 
-    // Animated golden hair flowing down
-    this.hairSegments = [];
-    var hairStartX = w / 2;
-    var hairStartY = h - 100;
-    this._animateHair(hairStartX, hairStartY, h - 32);
-
     // Hero approaches tower
     var heroKey = this.textures.exists('hero_run1') ? 'hero_run1' :
                   (this.textures.exists('hero_run') ? 'hero_run' : 'hero');
@@ -106,31 +100,6 @@ TangledTower.VictoryScene = new Phaser.Class({
 
     // Play victory music
     TangledTower.AudioGen.playVictory();
-  },
-
-  _animateHair: function(x, startY, endY) {
-    var numSegments = 12;
-    var segHeight = (endY - startY) / numSegments;
-    var self = this;
-
-    for (var i = 0; i < numSegments; i++) {
-      this.time.delayedCall(i * 150, function(idx) {
-        var y = startY + idx * segHeight;
-        var wave = Math.sin(idx * 0.8) * 6;
-        var hair = self.add.rectangle(x + wave, y + segHeight / 2, 4, segHeight + 2, 0xFFD700);
-        self.hairSegments.push(hair);
-
-        // Gentle swaying
-        self.tweens.add({
-          targets: hair,
-          x: hair.x + 3,
-          duration: 1000 + idx * 100,
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut'
-        });
-      }.bind(null, i));
-    }
   },
 
   _showVictoryText: function() {

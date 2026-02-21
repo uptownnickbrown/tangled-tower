@@ -13,6 +13,11 @@ TangledTower.CutsceneScene = new Phaser.Class({
     this.totalScore = data.score || 0;
     this.lives = data.lives || 3;
     this.skipIntro = data.skipIntro || false;
+    // Reset all state flags (critical for scene.restart() which reuses instance)
+    this.transitioning = false;
+    this.allTextShown = false;
+    this.lineComplete = false;
+    this.isIntro = false;
   },
 
   create: function() {
@@ -80,24 +85,6 @@ TangledTower.CutsceneScene = new Phaser.Class({
       gfx.fillRect(w / 2 - 22, h - 104, 44, 8);
       gfx.fillStyle(0x222222, 1);
       gfx.fillRect(w / 2 - 5, h - 96, 10, 12);
-    }
-
-    // Golden hair flowing from tower
-    for (var j = 0; j < 10; j++) {
-      var self = this;
-      this.time.delayedCall(j * 120, function(idx) {
-        var hairY = h - 90 + idx * 6;
-        var hairWave = Math.sin(idx * 0.7) * 5;
-        var hair = self.add.rectangle(w / 2 + hairWave + 4, hairY, 3, 7, 0xFFD700);
-        self.tweens.add({
-          targets: hair,
-          x: hair.x + 3,
-          duration: 900 + idx * 80,
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut'
-        });
-      }.bind(null, j));
     }
 
     // Intro text lines
