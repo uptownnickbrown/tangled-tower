@@ -24,7 +24,8 @@ TangledTower.BootScene = new Phaser.Class({
 
     // Load AI-generated sprites
     var sprites = [
-      'hero_run', 'hero_jump', 'hero_crouch', 'hero_hurt',
+      'hero_run', 'hero_run1', 'hero_run2', 'hero_run3',
+      'hero_jump', 'hero_crouch', 'hero_hurt',
       'tower', 'goblin', 'bat', 'vine',
       'boss_troll', 'boss_vine', 'boss_bat', 'boss_knight', 'boss_dragon',
       'powerup_shield', 'powerup_boots', 'powerup_sword',
@@ -48,13 +49,22 @@ TangledTower.BootScene = new Phaser.Class({
   },
 
   _createAnimations: function() {
-    // Hero animations - each pose is a separate AI-generated image
-    // For "run" we use a single image (no multi-frame cycle from AI)
-    // The run animation will just be the single run image
+    // Hero run cycle - 3 AI-generated frames for smooth animation
+    var runFrames = [];
+    if (this.textures.exists('hero_run1')) {
+      runFrames = [
+        { key: 'hero_run1' },
+        { key: 'hero_run2' },
+        { key: 'hero_run3' },
+        { key: 'hero_run2' }  // bounce back for smoother loop
+      ];
+    } else {
+      runFrames = [{ key: 'hero_run' }];
+    }
     this.anims.create({
       key: 'hero-run',
-      frames: [{ key: 'hero_run' }],
-      frameRate: 1,
+      frames: runFrames,
+      frameRate: 8,
       repeat: -1
     });
 

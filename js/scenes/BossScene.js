@@ -44,7 +44,8 @@ TangledTower.BossScene = new Phaser.Class({
     this.groundBody.setDisplaySize(w, 32).setVisible(false).refreshBody();
 
     // Hero
-    var heroKey = this.textures.exists('hero_run') ? 'hero_run' : 'hero';
+    var heroKey = this.textures.exists('hero_run1') ? 'hero_run1' :
+                  (this.textures.exists('hero_run') ? 'hero_run' : 'hero');
     var heroScale = TangledTower.HERO_SCALE || 0.04;
     this.hero = this.physics.add.sprite(TangledTower.HERO_X, TangledTower.GROUND_Y - 20, heroKey);
     this.hero.setScale(heroScale);

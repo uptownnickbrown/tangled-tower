@@ -71,7 +71,8 @@ TangledTower.VictoryScene = new Phaser.Class({
     this._animateHair(hairStartX, hairStartY, h - 32);
 
     // Hero approaches tower
-    var heroKey = this.textures.exists('hero_run') ? 'hero_run' : 'hero';
+    var heroKey = this.textures.exists('hero_run1') ? 'hero_run1' :
+                  (this.textures.exists('hero_run') ? 'hero_run' : 'hero');
     var heroScale = (TangledTower.HERO_SCALE || 0.04) * 1.5;
     var hero = this.add.sprite(40, h - 42, heroKey).setScale(heroScale);
     hero.play('hero-run');

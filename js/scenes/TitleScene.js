@@ -53,7 +53,8 @@ TangledTower.TitleScene = new Phaser.Class({
     }).setOrigin(0.5);
 
     // Hero sprite running in place
-    var heroKey = this.textures.exists('hero_run') ? 'hero_run' : 'hero';
+    var heroKey = this.textures.exists('hero_run1') ? 'hero_run1' :
+                  (this.textures.exists('hero_run') ? 'hero_run' : 'hero');
     if (this.textures.exists(heroKey)) {
       var heroScale = (TangledTower.HERO_SCALE || 0.04) * 1.5;
       var hero = this.add.sprite(100, h - 50, heroKey);
