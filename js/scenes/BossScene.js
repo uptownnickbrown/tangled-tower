@@ -590,6 +590,6 @@ TangledTower.BossScene = new Phaser.Class({
   onCrouchEnd: function() {},
 
   shutdown: function() {
-    TangledTower.InputManager.reset();
+    TangledTower.InputManager.destroy();
   }
 });

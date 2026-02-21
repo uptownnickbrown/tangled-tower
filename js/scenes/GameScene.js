@@ -703,6 +703,6 @@ TangledTower.GameScene = new Phaser.Class({
   },
 
   shutdown: function() {
-    TangledTower.InputManager.reset();
+    TangledTower.InputManager.destroy();
   }
 });

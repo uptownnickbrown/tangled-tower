@@ -136,5 +136,16 @@ TangledTower.InputManager = {
     this.isCrouching = false;
     this.hasJumpedThisPress = false;
     this.enabled = true;
+  },
+
+  destroy: function() {
+    if (this._scene) {
+      if (this._scene.spaceKey) {
+        this._scene.spaceKey.removeAllListeners();
+      }
+      this._scene.input.removeAllListeners();
+    }
+    this.reset();
+    this._scene = null;
   }
 };

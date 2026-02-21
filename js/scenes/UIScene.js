@@ -78,5 +78,12 @@ TangledTower.UIScene = new Phaser.Class({
       this.hearts[i].setAlpha(i < health ? 1 : 0.3);
     }
     this.currentHealth = health;
+  },
+
+  shutdown: function() {
+    var gameScene = this.scene.get('GameScene');
+    var bossScene = this.scene.get('BossScene');
+    if (gameScene) gameScene.events.off('updateHUD', this._onUpdate, this);
+    if (bossScene) bossScene.events.off('updateHUD', this._onUpdate, this);
   }
 });

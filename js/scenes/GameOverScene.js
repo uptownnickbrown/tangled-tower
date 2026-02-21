@@ -78,5 +78,10 @@ TangledTower.GameOverScene = new Phaser.Class({
       self.input.on('pointerdown', restart);
       self.input.keyboard.on('keydown-SPACE', restart);
     });
+  },
+
+  shutdown: function() {
+    this.input.removeAllListeners();
+    this.input.keyboard.removeAllListeners();
   }
 });
