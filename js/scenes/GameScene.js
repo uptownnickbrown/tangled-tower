@@ -573,8 +573,8 @@ TangledTower.GameScene = new Phaser.Class({
         // Scale AI vine differently per size
         var sizeScales = [scale * 1.2, scale * 1.5, scale * 1.8];
         vine.setScale(sizeScales[size] || scale);
-        var vineW = vine.displayWidth * 0.4;
-        var vineH = vine.displayHeight * 0.85;
+        var vineW = vine.displayWidth * 0.25;
+        var vineH = vine.displayHeight * 0.5;
         vine.body.setSize(vineW / vine.scaleX, vineH / vine.scaleY);
         vine.body.setOffset(
           (vine.width - vineW / vine.scaleX) / 2,
