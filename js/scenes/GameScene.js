@@ -529,7 +529,7 @@ TangledTower.GameScene = new Phaser.Class({
       if (isAI) {
         var coinScale = 0.31;
         coin.setScale(coinScale);
-        var coinSize = coin.displayWidth * 1.2;
+        var coinSize = coin.displayWidth * 2.0;
         coin.body.setSize(coinSize / coinScale, coinSize / coinScale);
         coin.body.setOffset(
           (coin.width - coinSize / coinScale) / 2,
@@ -571,7 +571,7 @@ TangledTower.GameScene = new Phaser.Class({
       vine.body.enable = true;
       if (isAI) {
         // Scale AI vine differently per size
-        var sizeScales = [scale * 0.8, scale, scale * 1.2];
+        var sizeScales = [scale * 1.2, scale * 1.5, scale * 1.8];
         vine.setScale(sizeScales[size] || scale);
         var vineW = vine.displayWidth * 0.4;
         var vineH = vine.displayHeight * 0.85;
@@ -670,7 +670,7 @@ TangledTower.GameScene = new Phaser.Class({
       pu._puType = type;
       if (isAI) {
         pu.setScale(scale);
-        var puSize = pu.displayWidth * 0.7;
+        var puSize = pu.displayWidth * 2.0;
         pu.body.setSize(puSize / scale, puSize / scale);
         pu.body.setOffset(
           (pu.width - puSize / scale) / 2,
