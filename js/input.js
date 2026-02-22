@@ -16,10 +16,9 @@ TangledTower.InputManager = {
   _lastGroundedTime: 0,    // For coyote time
   _pendingJump: false,     // For input buffering
   _pendingJumpTime: 0,
-  _groundPressQueued: false, // Intent window: press on ground awaiting disambiguation
+  _groundPressQueued: false, // Ground press queued — stays alive until release (jump) or crouch
   COYOTE_TIME: 120,        // ms — can still jump briefly after leaving ground
   JUMP_BUFFER: 200,        // ms — press remembered just before landing
-  TAP_INTENT_WINDOW: 50,   // ms — wait this long to disambiguate tap vs hold (3 frames)
 
   setup: function(scene) {
     var self = this;
@@ -58,8 +57,8 @@ TangledTower.InputManager = {
     var canGroundJump = onGround ||
       (now - this._lastGroundedTime < this.COYOTE_TIME && this.jumpCount === 0);
 
-    if (canGroundJump && this.jumpCount === 0 && !this.isCrouching) {
-      // Queue ground press — wait TAP_INTENT_WINDOW to disambiguate tap vs hold
+    if (canGroundJump && !this.isCrouching) {
+      // Queue ground press — stays alive until consumed by release (jump) or crouch
       this._groundPressQueued = true;
     } else if (!onGround && this.jumpCount === 1) {
       // In air after first jump -> double jump immediately (no need to wait)
@@ -98,7 +97,7 @@ TangledTower.InputManager = {
     this._pendingJump = false;
 
     if (this._groundPressQueued) {
-      // Released before intent window expired — this was a tap. Fire jump now.
+      // Released before crouch threshold — this is a jump.
       this._fireJump();
       return;
     }
@@ -154,17 +153,6 @@ TangledTower.InputManager = {
       this._lastGroundedTime = now;
     }
 
-    // Intent window: if ground press is queued and window expired while still held,
-    // this is a hold — enter crouch path (don't jump)
-    if (this._groundPressQueued && this.isDown) {
-      var queuedTime = now - this.downTime;
-      if (queuedTime >= this.TAP_INTENT_WINDOW) {
-        // Still held past intent window — this is a hold, not a tap
-        this._groundPressQueued = false;
-        // Don't jump; fall through to crouch detection below
-      }
-    }
-
     // Reset jump count when landing
     if (onGround && hero.body.velocity.y >= 0 && this.jumpCount > 0) {
       this.jumpCount = 0;
@@ -180,10 +168,12 @@ TangledTower.InputManager = {
       }
     }
 
-    // Crouch detection: holding on ground past threshold (and intent window has passed)
-    if (this.isDown && onGround && !this.isCrouching && !this.hasJumpedThisPress && !this._groundPressQueued) {
+    // Crouch detection: holding on ground past crouch threshold
+    // The _groundPressQueued flag stays alive until consumed by _onUp (jump) or here (crouch).
+    if (this.isDown && onGround && !this.isCrouching && !this.hasJumpedThisPress) {
       var holdTime = now - this.downTime;
       if (holdTime >= TangledTower.CROUCH_THRESHOLD) {
+        this._groundPressQueued = false; // consumed by crouch path
         this.isCrouching = true;
         hero.play('hero-crouch', true);
         // Shorter hitbox (scaled for AI sprites)
