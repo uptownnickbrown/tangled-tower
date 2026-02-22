@@ -163,23 +163,21 @@ TangledTower.InputManager = {
         hero.height - heroH / scale
       );
 
-      if (onGround) {
-        var chargeRatio = Math.min((holdDuration - TangledTower.CROUCH_THRESHOLD) / 800, 1);
-        var velocity = Phaser.Math.Linear(
-          TangledTower.JUMP_VELOCITY,
-          TangledTower.CHARGED_JUMP_VELOCITY,
-          chargeRatio
-        );
-        hero.body.velocity.y = velocity;
-        this.jumpCount = 1;
-        hero.play('hero-jump', true);
-        if (TangledTower.AudioGen) TangledTower.AudioGen.playJump();
-        this._log('UP:chargedJump', 'charge=' + Math.round(chargeRatio * 100) + '%');
-      } else {
-        hero.play('hero-run', true);
-        this._log('UP:crouchRelease', 'airborne, no jump');
-      }
+      // Always fire charged jump on crouch release.
+      // The hero may be briefly "airborne" due to hitbox shrink during crouch
+      // (body loses ground contact for 1-2 frames), but they were just on the ground.
+      var chargeRatio = Math.min((holdDuration - TangledTower.CROUCH_THRESHOLD) / 800, 1);
+      var velocity = Phaser.Math.Linear(
+        TangledTower.JUMP_VELOCITY,
+        TangledTower.CHARGED_JUMP_VELOCITY,
+        chargeRatio
+      );
+      hero.body.velocity.y = velocity;
+      this.jumpCount = 1;
+      hero.play('hero-jump', true);
+      if (TangledTower.AudioGen) TangledTower.AudioGen.playJump();
       if (scene.onCrouchEnd) scene.onCrouchEnd();
+      this._log('UP:chargedJump', 'charge=' + Math.round(chargeRatio * 100) + '% onGround=' + onGround);
 
     } else if (!this.hasJumpedThisPress) {
       // Fallback: released without jumping and not crouching
