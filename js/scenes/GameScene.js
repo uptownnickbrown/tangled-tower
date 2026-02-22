@@ -33,6 +33,9 @@ TangledTower.GameScene = new Phaser.Class({
     this.lastSpawnDistance = {};
     this.eventsFired = {};
     this.totalCoins = 0;
+    this._bossWarningShown = false;
+    this._finishLineSpawned = false;
+    this._finishLineObjects = [];
 
     // Camera
     this.cameras.main.setBackgroundColor(levelData.skyColor);
@@ -150,6 +153,11 @@ TangledTower.GameScene = new Phaser.Class({
     this._scrollObjects(this.coins, effectiveSpeed, dt);
     this._scrollObjects(this.powerups, effectiveSpeed, dt);
 
+    // Scroll finish line if spawned
+    if (this._finishLineObjects.length > 0) {
+      this._scrollFinishLine(effectiveSpeed, dt);
+    }
+
     // Animate bats (sine wave)
     this.bats.getChildren().forEach(function(bat) {
       if (bat.active) {
@@ -215,6 +223,29 @@ TangledTower.GameScene = new Phaser.Class({
       score: this.totalScore + this.score,
       level: this.levelData.id
     });
+
+    // Boss approach warning
+    var bossWarningDist = this.levelData.levelLength - 300;
+    if (this.distanceTraveled >= bossWarningDist && !this._bossWarningShown) {
+      this._bossWarningShown = true;
+      var bossName = this.levelData.boss ? this.levelData.boss.name : 'BOSS';
+      var warn = TangledTower.bmpText(this, TangledTower.GAME_WIDTH / 2, TangledTower.GAME_HEIGHT / 2 - 30,
+        bossName.toUpperCase() + ' AHEAD!', 16, 0xFF4444, 55);
+      this.tweens.add({
+        targets: [warn, warn._shadow],
+        alpha: 0,
+        duration: 2500,
+        onComplete: function() { warn.destroy(); if (warn._shadow) warn._shadow.destroy(); }
+      });
+      TangledTower.AudioGen.playBossWarning();
+    }
+
+    // Spawn finish line
+    var finishLineDist = this.levelData.levelLength - 150;
+    if (this.distanceTraveled >= finishLineDist && !this._finishLineSpawned) {
+      this._finishLineSpawned = true;
+      this._spawnFinishLine();
+    }
 
     // Check level complete
     if (this.distanceTraveled >= this.levelData.levelLength) {
@@ -455,6 +486,10 @@ TangledTower.GameScene = new Phaser.Class({
 
   _checkSpawns: function() {
     var spawns = this.levelData.spawns;
+    var endZone = this.levelData.levelLength - 400;
+
+    // Stop spawning enemies/obstacles in the final stretch
+    if (this.distanceTraveled >= endZone) return;
 
     for (var i = 0; i < spawns.length; i++) {
       var s = spawns[i];
@@ -1047,6 +1082,67 @@ TangledTower.GameScene = new Phaser.Class({
         });
       }
     });
+  },
+
+  // --- Finish Line ---
+
+  _spawnFinishLine: function() {
+    var w = TangledTower.GAME_WIDTH;
+    var groundY = TangledTower.GROUND_Y;
+    var x = TangledTower.SPAWN_X + 40;
+
+    // Checkered banner poles
+    var gfx = this.add.graphics().setDepth(6);
+
+    // Left pole
+    gfx.fillStyle(0xFFFFFF, 1);
+    gfx.fillRect(x, groundY - 60, 4, 60);
+    gfx.fillStyle(0xFF0000, 1);
+    gfx.fillRect(x, groundY - 60, 4, 8);
+    gfx.fillRect(x, groundY - 44, 4, 8);
+    gfx.fillRect(x, groundY - 28, 4, 8);
+
+    // Right pole
+    gfx.fillStyle(0xFFFFFF, 1);
+    gfx.fillRect(x + 50, groundY - 60, 4, 60);
+    gfx.fillStyle(0xFF0000, 1);
+    gfx.fillRect(x + 50, groundY - 60, 4, 8);
+    gfx.fillRect(x + 50, groundY - 44, 4, 8);
+    gfx.fillRect(x + 50, groundY - 28, 4, 8);
+
+    // Checkered banner between poles
+    var checkerSize = 6;
+    for (var row = 0; row < 2; row++) {
+      for (var col = 0; col < 8; col++) {
+        var isBlack = (row + col) % 2 === 0;
+        gfx.fillStyle(isBlack ? 0x222222 : 0xFFFFFF, 1);
+        gfx.fillRect(x + 4 + col * checkerSize, groundY - 60 + row * checkerSize, checkerSize, checkerSize);
+      }
+    }
+
+    this._finishLineObjects.push(gfx);
+
+    // "BOSS FIGHT!" text floating above
+    var label = TangledTower.bmpText(this, x + 27, groundY - 72, 'BOSS FIGHT!', 8, 0xFFD700, 6);
+    this._finishLineObjects.push(label);
+    if (label._shadow) this._finishLineObjects.push(label._shadow);
+
+    // Pulse the text
+    this.tweens.add({
+      targets: [label, label._shadow],
+      alpha: { from: 1, to: 0.4 },
+      duration: 400,
+      yoyo: true,
+      repeat: -1
+    });
+  },
+
+  _scrollFinishLine: function(speed, dt) {
+    var px = speed * dt;
+    for (var i = 0; i < this._finishLineObjects.length; i++) {
+      var obj = this._finishLineObjects[i];
+      if (obj) obj.x -= px;
+    }
   },
 
   // --- Level Complete ---
